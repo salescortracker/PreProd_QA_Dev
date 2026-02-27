@@ -60,6 +60,7 @@ import { ShiftsComponent } from './pages/shifts/shifts.component';
 import { PayGroupsComponent } from '../pages/payroll/pay-groups/pay-groups.component';
 import { EarningDeductionsComponent } from '../pages/payroll/earning-deductions/earning-deductions.component';
 import { ResignationmasterComponent } from './master/resignationmaster/resignationmaster.component';
+import { EmploymentTypeComponent } from '../pages/master/employment-type/employment-type.component';
 
 const routes: Routes = [
   {
@@ -126,6 +127,7 @@ const routes: Routes = [
       { path: 'week-off', component: WeekOffComponent },
         { path: 'shifts', component: ShiftsComponent },
          { path: 'resignationmaster', component: ResignationmasterComponent },
+         { path: 'employment-type', component: EmploymentTypeComponent}
 
       // Add more admin pages here
     ]

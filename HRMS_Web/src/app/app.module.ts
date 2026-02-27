@@ -104,6 +104,7 @@ import { EarningDeductionsComponent } from './pages/payroll/earning-deductions/e
 import { ForgotPasswordComponent } from './features/login/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/login/reset-password/reset-password.component';
 import { VerifyOtpComponent } from './features/login/verify-otp/verify-otp.component';
+import { EmploymentTypeComponent } from './pages/master/employment-type/employment-type.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -201,7 +202,8 @@ import { VerifyOtpComponent } from './features/login/verify-otp/verify-otp.compo
     EarningDeductionsComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
-    VerifyOtpComponent
+    VerifyOtpComponent,
+    EmploymentTypeComponent
    
     
     

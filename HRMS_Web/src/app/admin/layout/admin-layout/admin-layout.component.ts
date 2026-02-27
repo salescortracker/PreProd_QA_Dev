@@ -50,7 +50,8 @@ export class AdminLayoutComponent {
       { title: 'Week-Off', route: '/admin/week-off' },
       { title: 'Shifts', route: '/admin/shifts' },
        { title: 'Resignation Master', route: '/admin/resignationmaster' },
-       { title: 'My Team Configuration', route: '/admin/hierarchy-config' }
+       { title: 'My Team Configuration', route: '/admin/hierarchy-config' },
+       { title: 'EmploymentType', route: '/admin/employment-type'}
     ],
     // 'Configuration': [
     //   { title: 'Approval Workflows', route: '/admin/approval-workflow' },
