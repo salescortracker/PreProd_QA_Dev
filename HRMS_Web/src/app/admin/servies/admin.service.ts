@@ -799,6 +799,23 @@ export class AdminService {
   sendWelcomeEmail(user: User): Observable<any> {
     return this.http.post(`${this.baseUrl}/UserManagement/SendEmail`, user);
   }
+////////////////////employment-type
+
+  getEmploymentTypes(userId: number) {
+  return this.http.get(`${this.baseUrl}/MasterData/employment-type?userId=${userId}`);
+}
+
+createEmploymentType(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/CreateEmploymentType`, data);
+}
+
+updateEmploymentType(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/UpdateEmploymentType`, data);
+}
+
+deleteEmploymentType(id: number) {
+  return this.http.post(`${this.baseUrl}/MasterData/DeleteEmploymentType?id=${id}`, {});
+}
 
   // -------------------------------------------------------------
   // 🔹 MENU MASTER OPERATIONS
