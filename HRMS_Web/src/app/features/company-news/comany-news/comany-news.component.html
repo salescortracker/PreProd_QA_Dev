@@ -1,0 +1,68 @@
+<app-header></app-header>
+<app-sidebar></app-sidebar>
+
+<div class="dashboard-header">
+  <h2 class="dashboard-title">Company News</h2>
+  <nav class="breadcrumb">
+    <a href="#">Home</a> &gt;
+    <a href="#">More</a> &gt;
+    <span>Company News</span>
+  </nav>
+</div>
+
+<div class="tab-container p-4">
+
+  <!-- Filter Bar -->
+  <div class="filter-bar mb-4 p-3 bg-light rounded shadow-sm">
+    <div class="row g-3">
+      
+      <!-- Category Dropdown (dynamic from admin department table) -->
+      <div class="col-md-3">
+        <label class="form-label">Category</label>
+        <select class="form-select" [(ngModel)]="searchCategory">
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <!-- Date Filter -->
+      <div class="col-md-3">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" [(ngModel)]="searchDate">
+      </div>
+
+      <!-- Filter Button -->
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" (click)="loadFilteredNews()">Filter</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- News Listing -->
+  <div class="news-list row g-4" *ngIf="newsList.length > 0; else noNews">
+    <!-- Single News Card -->
+    <div class="col-md-6 col-lg-4" *ngFor="let news of newsList">
+      <div class="news-card p-3 shadow-sm rounded bg-white h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="news-header d-flex justify-content-between align-items-start">
+            <h5 class="fw-semibold mb-2">{{ news.Title }}</h5>
+            <span class="news-date text-muted">{{ news.Date | date:'dd-MMM-yyyy' }}</span>
+          </div>
+          <span class="badge bg-info mb-2">{{ news.Category }}</span>
+          <p class="news-desc text-muted">{{ news.Description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No news message -->
+  <ng-template #noNews>
+    <div class="col-12">
+      <p class="text-center text-muted">Select a category or date and click Filter to see news.</p>
+    </div>
+  </ng-template>
+
+</div>
+
+<app-footer></app-footer>
