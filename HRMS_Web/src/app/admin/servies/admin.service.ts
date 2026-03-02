@@ -938,7 +938,8 @@ updateDepartment(id: number, model: Department): Observable<any> {
 }
 
 deleteDepartment(id: number): Observable<any> {
-  return this.http.post(`/MasterData/DeleteDepartment/${id}`, {}); // soft delete
+  debugger;
+  return this.http.delete(`${this.baseUrl}/MasterData/DeleteDepartment/${id}`, {}); 
 }
 
 getDesignations(userId:number): Observable<Designation[]> {

@@ -198,8 +198,8 @@
                 <td>{{ d.designationName }}</td>
                 <td>{{ d.description }}</td>
                
-                <td>{{ getCompanyName(d.companyId) }}</td>
-                <td>{{ getRegionName(d.regionId) }}</td>
+                <td>{{ d.companyName }}</td>
+                <td>{{ d.regionName }}</td>
                 <td class="text-center">
                   <span class="badge" [ngClass]="d.isActive ? 'bg-success' : 'bg-secondary'">
                     {{ d.isActive ? 'Active' : 'Inactive' }}

@@ -17,6 +17,7 @@ export class DepartmentComponent {
   departments: any[] = [];
   companies: any[] = [];
   regions: any[] = [];
+  filteredRegions: any[] = [];
 
   // Form Model
   department: any = this.getEmptyDepartment();
@@ -81,13 +82,20 @@ userId: number = sessionStorage.getItem('UserId') ? Number(sessionStorage.getIte
       error: () => Swal.fire('Error', 'Failed to load regions.', 'error')
     });
   }
+  onCompanyChange(companyId: number): void {
+  this.department.regionId = 0;
+
+  this.filteredRegions = companyId
+    ? this.regions.filter(r => Number(r.companyID) === Number(companyId))
+    : [];
+}
 
   // ------------------------------------------------------------
   // 🔹 Create / Update Department
   // ------------------------------------------------------------
   onSubmit(): void {
     if (this.isEditMode) {
-      this.department.departmentName=this.department.description;
+      this.department.departmentName=this.department.departmentName;
       this.departmentService.updateDepartment(this.department.departmentId, this.department).subscribe({
         next: () => {
           Swal.fire('Updated!', 'Department updated successfully.', 'success');
@@ -114,12 +122,13 @@ userId: number = sessionStorage.getItem('UserId') ? Number(sessionStorage.getIte
   editDepartment(d: any): void {
     this.department = { ...d };
     this.isEditMode = true;
+    this.onCompanyChange(this.department.companyId);
   }
 
   deleteDepartment(d: any): void {
     Swal.fire({
-      title: `Delete "${d.description}"?`,
-      text: 'This will deactivate the department.',
+      title: `Delete "${d.departmentName}"?`,
+      text: 'This will permanently delete the department.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -127,11 +136,9 @@ userId: number = sessionStorage.getItem('UserId') ? Number(sessionStorage.getIte
       confirmButtonText: 'Yes, delete it'
     }).then((result) => {
       if (result.isConfirmed) {
-        d.isActive = false;
-        d.departmentName=d.description;
-        this.departmentService.updateDepartment(d.departmentId, d).subscribe({
+        this.departmentService.deleteDepartment(d.departmentId, ).subscribe({
           next: () => {
-            Swal.fire('Deleted!', 'Department deactivated successfully.', 'success');
+            Swal.fire('Deleted!', 'Department deleted successfully.', 'success');
             this.loadDepartments();
           },
           error: () => Swal.fire('Error', 'Delete failed.', 'error')
@@ -168,7 +175,7 @@ userId: number = sessionStorage.getItem('UserId') ? Number(sessionStorage.getIte
     return this.departments.filter((d) => {
       const matchesSearch =
         d.departmentName?.toLowerCase().includes(search) ||
-        d.description?.toLowerCase().includes(search);
+        d.departmentname?.toLowerCase().includes(search);
       const matchesStatus =
         this.statusFilter === '' || d.isActive === this.statusFilter;
       return matchesSearch && matchesStatus;
