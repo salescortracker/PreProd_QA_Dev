@@ -203,12 +203,12 @@ shift: ShiftMasterDto = this.getEmptyShift();
     alert(message);
   }
 
-  get filteredShifts() {
-    return this.shifts.filter(s =>
-      (!this.searchText || s.shiftName.toLowerCase().includes(this.searchText.toLowerCase())) &&
-      (this.statusFilter === '' || s.isActive === this.statusFilter)
-    );
-  }
+  // get filteredShifts() {
+  //   return this.shifts.filter(s =>
+  //     (!this.searchText || s.shiftName.toLowerCase().includes(this.searchText.toLowerCase())) &&
+  //     (this.statusFilter === '' || s.isActive === this.statusFilter)
+  //   );
+  // }
 
   get totalPages() {
     return Math.ceil(this.filteredShifts.length / this.pageSize);
@@ -222,4 +222,16 @@ shift: ShiftMasterDto = this.getEmptyShift();
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
+  get pages(): number[] {
+  return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+}
+
+get filteredShifts() {
+  this.currentPage = 1; // reset page when filtering
+
+  return this.shifts.filter(s =>
+    (!this.searchText || s.shiftName.toLowerCase().includes(this.searchText.toLowerCase())) &&
+    (this.statusFilter === '' || s.isActive === this.statusFilter)
+  );
+}
 }
