@@ -93,17 +93,13 @@
     <!-- Blood Group -->
     <div class="form-group">
       <label>Blood Group<span class="required">*</span></label>
-      <select formControlName="bloodGroup">
-        <option value="">Select blood group</option>
-        <option>A+</option>
-        <option>A-</option>
-        <option>B+</option>
-        <option>B-</option>
-        <option>AB+</option>
-        <option>AB-</option>
-        <option>O+</option>
-        <option>O-</option>
-      </select>
+<select formControlName="bloodGroup">
+  <option value="">Select blood group</option>
+  <option *ngFor="let bg of bloodGroupList"
+          [value]="bg.bloodGroupID">
+    {{ bg.bloodGroupName }}
+  </option>
+</select>
     </div>
 
     <!-- Citizenship -->
@@ -127,12 +123,13 @@
     <!-- Marital Status -->
     <div class="form-group">
       <label>Marital Status<span class="required">*</span></label>
-      <select formControlName="maritalStatusId">
-        <option value="">Select marital status</option>
-        <option value="4">Single</option>
-        <option value="5">Married</option>
-        <option value="6">Divorced</option>
-      </select>
+<select formControlName="maritalStatusId">
+  <option value="">Select marital status</option>
+  <option *ngFor="let ms of maritalStatusList"
+          [value]="ms.maritalStatusId">
+    {{ ms.maritalStatusName }}
+  </option>
+</select>
     </div>
 
     <!-- Marriage Date -->
