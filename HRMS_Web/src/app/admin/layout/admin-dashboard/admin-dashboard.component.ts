@@ -1,5 +1,6 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, OnInit } from '@angular/core';
 import { Chart } from 'chart.js/auto';
+import { EmployeePayRollService } from '../../../employee-pay-roll.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -8,90 +9,219 @@ import { Chart } from 'chart.js/auto';
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent {
-  stats = [
-    { title: 'Employees', value: 124, icon: 'fa-users', color: '#922b21' },
-    { title: 'Active Projects', value: 12, icon: 'fa-briefcase', color: '#1e88e5' },
-    { title: 'Pending Leaves', value: 7, icon: 'fa-calendar-days', color: '#f39c12' },
-    { title: 'Total Payroll', value: '₹4.8L', icon: 'fa-indian-rupee-sign', color: '#43a047' }
-  ];
+ 
+  userId!: number;
 
-  leaveSummary = [
-    { type: 'Casual Leave', used: 4, total: 12 },
-    { type: 'Sick Leave', used: 2, total: 10 },
-    { type: 'Earned Leave', used: 5, total: 15 }
-  ];
+  employees: any[] = [];
+  payrollList: any[] = [];
+  departments: any[] = [];
 
-  payrollSummary = [
-    { name: 'November 2025', processed: true, amount: 480000 },
-    { name: 'October 2025', processed: true, amount: 472000 },
-    { name: 'September 2025', processed: false, amount: 0 }
-  ];
+  totalPayrollAmount = 0;
+  today: Date = new Date();
+  stats: any[] = [];
 
-  recentActivities = [
-    { action: 'Added new employee', user: 'Admin', time: '5 mins ago' },
-    { action: 'Approved leave request', user: 'HR Manager', time: '1 hr ago' },
-    { action: 'Processed payroll', user: 'Finance', time: '3 hrs ago' },
-    { action: 'Updated project status', user: 'PMO', time: 'Yesterday' }
-  ];
+  performanceChart: any;
+  deptChart: any;
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.initPerformanceChart();
-      this.initDeptChart();
-    }, 200);
+  constructor(private payrollService: EmployeePayRollService) {}
+
+  /* ================= INIT ================= */
+
+  ngOnInit(): void {
+    this.userId = Number(sessionStorage.getItem('UserId'));
+    this.loadDepartments();
+    this.loadEmployees();
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initPerformanceChart();
+    }, 500);
+  }
+
+  /* ================= LOAD DEPARTMENTS ================= */
+
+  loadDepartments() {
+    this.payrollService.getDepartments(this.userId)
+      .subscribe((res: any) => {
+
+        // Handles both API types
+        if (res?.success) {
+          this.departments = res.data || [];
+        } else {
+          this.departments = res || [];
+        }
+
+        this.prepareStats();
+      });
+  }
+
+  /* ================= LOAD EMPLOYEES ================= */
+
+  loadEmployees() {
+    this.payrollService.getEmployees(this.userId)
+      .subscribe(res => {
+
+        this.employees = res || [];
+
+        // Load payroll AFTER employees loaded
+        this.loadPayroll();
+
+        this.prepareStats();
+        this.initDeptChart(); // Chart depends on employees
+      });
+  }
+
+  /* ================= LOAD PAYROLL ================= */
+
+  getMonthName(monthNumber: number): string {
+  const months = [
+    'January', 'February', 'March', 'April',
+    'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'
+  ];
+  return months[monthNumber - 1] || '';
+}
+
+loadPayroll() {
+
+  const month = new Date().getMonth() + 1;
+  const year = new Date().getFullYear();
+
+  this.payrollService
+    .getPayrollByMonth(month, year, this.userId)
+    .subscribe(res => {
+
+      // 🔥 Create employee lookup map
+      const employeeMap: any = {};
+
+      this.employees.forEach(emp => {
+        employeeMap[Number(emp.userId)] = emp;
+      });
+
+      // 🔥 Map payroll data
+      this.payrollList = (res || []).map(p => {
+
+        const payrollUserId = Number(p.userId ?? p.employeeId);
+
+        const emp = employeeMap[payrollUserId];
+
+        return {
+          ...p,
+          fullName: emp?.fullName || '-',
+          employeeCode: emp?.employeeCode || '-',
+          monthName: this.getMonthName(p.month)
+        };
+      });
+
+      this.totalPayrollAmount = this.payrollList
+        .reduce((sum, p) => sum + (p.netSalary || 0), 0);
+
+      this.prepareStats();
+    });
+}
+
+  /* ================= PREPARE STATS ================= */
+
+  prepareStats() {
+
+    this.stats = [
+      {
+        title: 'Employees',
+        value: this.employees.length || 0,
+        icon: 'fa-users',
+        color: '#922b21'
+      },
+      {
+        title: 'Departments',
+        value: this.departments.length || 0,
+        icon: 'fa-building',
+        color: '#1e88e5'
+      },
+      {
+        title: 'Payroll (This Month)',
+        value: '₹' + (this.totalPayrollAmount || 0).toLocaleString(),
+        icon: 'fa-indian-rupee-sign',
+        color: '#43a047'
+      },
+      {
+        title: 'Pending Payroll',
+        value: this.payrollList.filter(p => p.status !== 'Processed').length,
+        icon: 'fa-clock',
+        color: '#f39c12'
+      }
+    ];
+  }
+
+  /* ================= PERFORMANCE CHART ================= */
+
   initPerformanceChart() {
-    new Chart('performanceChart', {
+
+    if (this.performanceChart) {
+      this.performanceChart.destroy();
+    }
+
+    this.performanceChart = new Chart('performanceChart', {
       type: 'line',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
         datasets: [
           {
             label: 'Attendance %',
-            data: [94, 96, 92, 97, 95, 93],
+            data: [94, 96, 92, 97],
             borderColor: '#922b21',
-            backgroundColor: 'rgba(146,43,33,0.1)',
-            fill: true,
-            tension: 0.4
-          },
-          {
-            label: 'Performance %',
-            data: [88, 91, 85, 90, 87, 89],
-            borderColor: '#1e88e5',
-            backgroundColor: 'rgba(30,136,229,0.1)',
-            fill: true,
+            fill: false,
             tension: 0.4
           }
         ]
       },
       options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } },
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 10 } }
+        plugins: {
+          legend: { position: 'bottom' }
         }
       }
     });
   }
 
+  /* ================= DEPARTMENT CHART ================= */
+
   initDeptChart() {
-    new Chart('deptChart', {
+
+    if (this.deptChart) {
+      this.deptChart.destroy();
+    }
+
+    const deptCounts: any = {};
+
+    this.employees.forEach(emp => {
+      const dept = emp.departmentName || 'Others';
+      deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+    });
+
+    this.deptChart = new Chart('deptChart', {
       type: 'doughnut',
       data: {
-        labels: ['HR', 'Engineering', 'Sales', 'Finance', 'Support'],
+        labels: Object.keys(deptCounts),
         datasets: [
           {
-            data: [10, 50, 20, 8, 12],
-            backgroundColor: ['#922b21', '#1e88e5', '#43a047', '#fbc02d', '#8e24aa'],
-            borderWidth: 0
+            data: Object.values(deptCounts),
+            backgroundColor: [
+              '#922b21',
+              '#1e88e5',
+              '#43a047',
+              '#fbc02d',
+              '#8e24aa'
+            ]
           }
         ]
       },
       options: {
         responsive: true,
         cutout: '70%',
-        plugins: { legend: { position: 'bottom' } }
+        plugins: {
+          legend: { position: 'bottom' }
+        }
       }
     });
   }

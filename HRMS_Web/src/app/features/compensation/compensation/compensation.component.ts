@@ -7,6 +7,10 @@ import { Component } from '@angular/core';
   styleUrl: './compensation.component.css'
 })
 export class CompensationComponent {
+    activeTab: string = '';
+      setTab(tab: string) {
+    this.activeTab = tab;
+  }
   payslips = [
     { month: 'October 2025', gross: 5000, net: 4500, status: 'Paid' },
     { month: 'September 2025', gross: 5000, net: 4500, status: 'Paid' },

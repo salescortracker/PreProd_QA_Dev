@@ -61,6 +61,7 @@ import { PayGroupsComponent } from '../pages/payroll/pay-groups/pay-groups.compo
 import { EarningDeductionsComponent } from '../pages/payroll/earning-deductions/earning-deductions.component';
 import { ResignationmasterComponent } from './master/resignationmaster/resignationmaster.component';
 
+
 const routes: Routes = [
   {
     path: '',

@@ -83,6 +83,7 @@ loadCompanies() {
       this.companyMap = {};
       this.companies.forEach(c => {
         this.companyMap[c.companyId] = c.companyName;
+        console.log(res);
       });
     });
 }
@@ -94,6 +95,7 @@ loadRegions() {
       this.regionMap = {};
       this.regions.forEach(r => {
         this.regionMap[r.regionId] = r.regionName;
+         console.log(res);
       });
     });
 }

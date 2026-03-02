@@ -1180,17 +1180,17 @@ deleteAttachmentType(id: number) {
 
   // CREATE
   createAssetStatus(status: AssetStatus): Observable<any> {
-    return this.http.post(`${this.baseUrl}/asset-status`, status);
+    return this.http.post(`${this.baseUrl}/MasterData/asset-status`, status);
   }
 
   // UPDATE
   updateAssetStatus(status: AssetStatus): Observable<any> {
-    return this.http.put(`${this.baseUrl}/asset-status/${status.AssetStatusID}`, status);
+    return this.http.put(`${this.baseUrl}/MasterData/asset-status/${status.AssetStatusID}`, status);
   }
 
   // DELETE
   deleteAssetStatus(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/asset-status/${id}`);
+    return this.http.delete(`${this.baseUrl}/MasterData/asset-status/${id}`);
   }
 
   // GET all helpdesk categories

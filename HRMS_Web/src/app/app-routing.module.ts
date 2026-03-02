@@ -45,6 +45,10 @@ import { ChangePasswordComponent } from './features/change-password/change-passw
 import { ForgotPasswordComponent } from './features/login/forgot-password/forgot-password.component';
 import { VerifyOtpComponent } from './features/login/verify-otp/verify-otp.component';
 import { ResetPasswordComponent } from './features/login/reset-password/reset-password.component';
+import { EarningDeductionsComponent } from './pages/payroll/earning-deductions/earning-deductions.component';
+import { TaxSettingsComponent } from './admin/pages/payroll/tax-settings/tax-settings.component';
+import { PayGroupsComponent } from './pages/payroll/pay-groups/pay-groups.component';
+import { PayslipTemplateComponent } from './admin/pages/payroll/payslip-template/payslip-template.component';
 const routes: Routes = [
   { path: '', component: LoginComponent },
    { path: 'forgot-password', component: ForgotPasswordComponent },
@@ -84,7 +88,17 @@ const routes: Routes = [
 { path: 'company-policies', component: EmployeePolicyComponent },
 { path: 'my-team', component: MyTeamHierarchyComponent },
 { path: 'my-event', component: MyEventsComponent },
-{ path: 'compensation', component: CompensationComponent },
+{
+  path: 'compensation',
+  component: CompensationComponent,
+  children: [
+    { path: '', redirectTo: 'earning-deductions', pathMatch: 'full' },
+    { path: 'earning-deductions', component: EarningDeductionsComponent },
+    { path: 'tax-settings', component: TaxSettingsComponent },
+    { path: 'pay-groups', component: PayGroupsComponent },
+    { path: 'payslip-template', component: PayslipTemplateComponent }
+  ]
+},
 { path: 'recruitment', component: RecruitmentProcessComponent },
 
 { path: 'my-calendar', component: MyCalendarComponent },
