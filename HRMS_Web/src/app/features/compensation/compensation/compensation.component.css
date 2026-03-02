@@ -1333,6 +1333,15 @@ button:hover {
   display: flex;
   border-bottom: 2px solid #ddd;
 }
+/* Remove underline from Compensation Tabs */
+.tab-header a {
+  text-decoration: none !important;
+  color: #fff; /* keep white text */
+}
+
+.tab-header a:hover {
+  text-decoration: none !important;
+}
 
 
 .tab-label:hover {
