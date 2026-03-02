@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EmployeeResignation } from '../../employee-models/EmployeeResignation';
 import { EmployeeResignationService } from '../../employee-services/employee-resignation.service';
 import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
+import { AdminService } from '../../../../admin/servies/admin.service';
 
 @Component({
   selector: 'app-employee-personal-details',
@@ -22,13 +24,17 @@ username: any=sessionStorage.getItem('Name');
   existingRecordId: number | null = null; // if set => update mode only
   personals: any[] = [];      // for list
   editId: number | null = null; // store id for update
+  bloodGroupList: any[] = [];
+maritalStatusList: any[] = [];
    constructor(
     private fb: FormBuilder,
-    private service: EmployeeResignationService
+    private service: EmployeeResignationService, route: Router, private adminService: AdminService,
   ) {
     
   }
    ngOnInit(): void {
+      this.loadBloodGroups();      // 👈 add this
+  this.loadMaritalStatuses();  // 👈 add this
     
     this.createForm();
     this.loadAll();
@@ -124,7 +130,6 @@ username: any=sessionStorage.getItem('Name');
     }
  
 
-debugger;
     if (this.editId == null) {
       // CALL CREATE
       this.service.createempProfile(formData).subscribe(res => {
@@ -167,4 +172,32 @@ debugger;
       });
     }
   }
+loadBloodGroups() {
+  this.adminService.getBloodGroupsbyALL(this.companyId).subscribe({
+    next: (res: any) => {
+      if (res && res.data) {
+        this.bloodGroupList = res.data.filter((b: any) =>
+          b.companyID == this.companyId &&
+          b.regionID == this.regionId &&
+          b.isActive === true
+        );
+        console.timeLog(res);
+      }
+    },
+    error: (err) => console.error(err)
+  });
+}
+loadMaritalStatuses() {
+  this.adminService.getMaritalStatuses(this.userId).subscribe({
+    next: (res: any[]) => {
+      this.maritalStatusList = res.filter((m: any) =>
+        m.companyId == this.companyId &&
+        m.regionId == this.regionId &&
+        m.isActive === true
+      );
+      console.log(res);
+    },
+    error: (err) => console.error(err)
+  });
+}
 }

@@ -990,6 +990,13 @@ deleteGender(id: number) {
  getBloodGroupsbyID(userID: number): Observable<any> {
     return this.http.get(`${this.baseUrl}/MasterData/GetBloodGroupsById/${userID}`);
   }
+
+getBloodGroupsbyALL(companyId: number): Observable<any> {
+  return this.http.get(
+    `${this.baseUrl}/MasterData/GetAllBloodGroups?companyId=${companyId}`
+  );
+}
+
 //   // ✅ CREATE
   createBloodGroup(data: BloodGroup): Observable<any> {
     return this.http.post(`${this.baseUrl}/MasterData/AddBloodGroups`, data);
@@ -1024,7 +1031,7 @@ deleteGender(id: number) {
    // ----------------- Marital Status -----------------
   getMaritalStatuses(userId:Number): Observable<MaritalStatus[]> {
     // Must POST {} because backend uses [HttpPost("getall")]
-    return this.http.post<MaritalStatus[]>(`${this.baseUrl}/UserManagement/getall?userId=`+userId, {});
+    return this.http.post<MaritalStatus[]>(`${this.baseUrl}/UserManagement/getallMaritalStatus?userId=`+userId, {});
   }
 
   createMaritalStatus(data: MaritalStatus): Observable<any> {
