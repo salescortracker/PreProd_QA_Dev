@@ -1433,9 +1433,11 @@ deleteEducation(id: number): Observable<any> {
   );
 }
   // Mode of Study
-  getModeOfStudy(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/employee/modeofstudy`);
-  }
+getModeOfStudy(companyId: number, regionId: number): Observable<any[]> {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/employee/modeofstudy?companyId=${companyId}&regionId=${regionId}`
+  );
+}
 // ================= CERTIFICATION APIs =================
 
 

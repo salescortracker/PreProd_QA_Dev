@@ -115,12 +115,22 @@ certificateFileInput!: ElementRef<HTMLInputElement>;
     fileControl?.setErrors(null);
   }
 
-  loadModeOfStudy() {
-    this.adminService.getModeOfStudy().subscribe({
-      next: res => this.modeOfStudyList = res,
-      error: err => console.error(err)
-    });
+ loadModeOfStudy() {
+  if (!this.companyId || !this.regionId) {
+    this.modeOfStudyList = [];
+    return;
   }
+
+  this.adminService.getModeOfStudy(this.companyId, this.regionId).subscribe({
+    next: res => {
+      this.modeOfStudyList = res;
+    },
+    error: err => {
+      console.error(err);
+      this.modeOfStudyList = [];
+    }
+  });
+}
 
   public onFilterChange(): void {
     this.currentPage = 1;
