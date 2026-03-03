@@ -63,7 +63,18 @@ private apiUrl = environment.apiUrl + '/Employee';
 private apiadminUrl = environment.apiUrl + '/UserManagement';
   constructor(private http: HttpClient) { }
 // GET all resignations
- 
+ GetEmploymentTypes(userId: number, companyId: number, regionId: number): Observable<any[]> {
+  return this.http.get<any[]>(
+    `${this.apiadminUrl}/GetAllEmploymentTypeByUserAsync`,
+    {
+      params: {
+        userId: userId,
+        companyId: companyId,
+        regionId: regionId
+      }
+    }
+  );
+}
 
   // GET resignation by ID
   getById(id: number): Observable<EmployeeResignation> {

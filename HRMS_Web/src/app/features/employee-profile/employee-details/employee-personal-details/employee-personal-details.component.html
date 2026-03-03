@@ -23,10 +23,10 @@
     <!-- Gender -->
     <div class="form-group">
       <label>Gender<span class="required">*</span></label>
-    <select formControlName="genderId">
+      <select formControlName="genderId">
         <option value="">Select gender</option>
         <option *ngFor="let g of genderList" [value]="g.genderId">{{ g.genderName }}</option>
-       
+
       </select>
     </div>
 
@@ -136,7 +136,7 @@
     </div>
 
     <!-- Marriage Date -->
-    <div class="form-group"   *ngIf="personalForm.get('maritalStatusId')?.value === '5'">
+    <div class="form-group" *ngIf="personalForm.get('maritalStatusId')?.value === '5'">
       <label>Marriage Date<span class="required">*</span></label>
       <input type="date" formControlName="marriageDate">
     </div>
@@ -147,7 +147,7 @@
       <input type="tel" formControlName="workPhone" placeholder="Enter work phone number">
     </div>
 
-     <div class="form-group">
+    <div class="form-group">
       <label>Band/Grade<span class="required">*</span></label>
       <input type="text" formControlName="brandGrade" placeholder="Enter band/grade">
     </div>
@@ -155,15 +155,20 @@
       <label>ESIC Number<span class="required">*</span></label>
       <input type="text" formControlName="esicNumber" placeholder="Enter ESIC number">
     </div>
-     <div class="form-group">
+    <div class="form-group">
       <label>PF Number<span class="required">*</span></label>
       <input type="text" formControlName="pfNumber" placeholder="Enter PF number">
     </div>
-     <div class="form-group">
+    <div class="form-group">
       <label>Employment Type<span class="required">*</span></label>
-      <input type="text" formControlName="employmentType" placeholder="Enter employment type">
+      <select formControlName="employmentTypeId">
+        <option value="">Select Employment Type</option>
+        <option *ngFor="let et of employmentTypeList" [value]="et.employmenttypeId">
+          {{ et.employmenttypeName }}
+        </option>
+      </select>
     </div>
-      <div class="form-group">
+    <div class="form-group">
       <label>Date of Joining<span class="required">*</span></label>
       <input type="date" formControlName="dateofJoining" placeholder="Enter date of joining">
     </div>
