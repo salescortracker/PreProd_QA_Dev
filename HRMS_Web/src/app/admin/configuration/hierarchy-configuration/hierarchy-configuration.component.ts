@@ -1,6 +1,6 @@
 
   import { Component, OnInit } from '@angular/core';
-import { AdminService, ManagerDropdown, EmployeeMaster } from '../../servies/admin.service';
+import { AdminService, ManagerDropdown, EmployeeMaster, MyTeamUsers       } from '../../servies/admin.service';
 import Swal from 'sweetalert2';
 interface Employee {
   id: number;
@@ -36,6 +36,7 @@ export class HierarchyConfigurationComponent {
   };
 
   isEditMode = false;
+ users: MyTeamUsers[] = [];
 
   userId: number = Number(sessionStorage.getItem('UserId')) || 0;
   companyId: number = Number(sessionStorage.getItem('CompanyId')) || 0;
@@ -44,30 +45,54 @@ export class HierarchyConfigurationComponent {
   constructor(private service: AdminService) {}
 
   ngOnInit(): void {
-    if (!this.userId || !this.companyId || !this.regionId) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Session missing!',
-        text: 'User session missing. Setting dev defaults...',
-        timer: 2500,
-        showConfirmButton: false
-      });
-      sessionStorage.setItem('UserId', '1008');
-      sessionStorage.setItem('CompanyId', '1023');
-      sessionStorage.setItem('RegionId', '11');
-      sessionStorage.setItem('roleId', '1'); 
-      this.userId = 1008;
-      this.companyId = 1023;
-      this.regionId = 11;
-    }
-
+ 
+    
+  this.loadUsers(); 
     this.loadEmployees();
     this.loadManagers();
   }
+  loadUsers(): void {
+  this.service.getAllUsersForMyTeamConfigurations(this.userId).subscribe({
+    next: (data) => {
+      this.users = data;
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to load users.'
+      });
+    }
+  });
+}
+
+onUserSelect(userId: number): void {
+
+  const selectedUser = this.users.find(u => u.userId === userId);
+
+  if (selectedUser) {
+
+    // Set employee id
+    this.newEmployee.employeeMasterId = selectedUser.userId;
+
+    // Auto fill values
+    this.newEmployee.fullName = selectedUser.fullName;
+
+    // designation → role
+    this.newEmployee.role = selectedUser.designation;
+
+    // departmentId → department (convert to string if needed)
+    this.newEmployee.department = selectedUser.departmentId?.toString() ?? '';
+
+    // reportingTo → managerId
+    this.newEmployee.managerId = selectedUser.reportingTo;
+
+  }
+}
 
   // ================= LOAD DATA =================
   loadEmployees(): void {
-    this.service.getAllEmployees().subscribe({
+this.service.getAllEmployees(this.userId).subscribe({
       next: data => {
         this.employees = data;
         this.totalPages = Math.ceil(this.employees.length / this.pageSize);
@@ -88,7 +113,7 @@ export class HierarchyConfigurationComponent {
   }
 
   loadManagers(): void {
-    this.service.getManagers().subscribe({
+    this.service.getManagers(this.userId).subscribe({
       next: data => this.managers = data,
       error: err => Swal.fire({
         icon: 'error',
@@ -116,7 +141,11 @@ export class HierarchyConfigurationComponent {
         updatedBy: this.userId
       };
 
-      this.service.updateEmployee(this.newEmployee.employeeMasterId, payload).subscribe({
+     this.service.updateEmployee(
+  this.newEmployee.employeeMasterId,
+  this.userId,
+  payload
+).subscribe({
         next: () => {
           Swal.fire({
             icon: 'success',
@@ -178,7 +207,10 @@ export class HierarchyConfigurationComponent {
       cancelButtonText: 'Cancel'
     }).then(result => {
       if (result.isConfirmed) {
-        this.service.deleteEmployee(emp.employeeMasterId).subscribe({
+this.service.deleteEmployee(
+  emp.employeeMasterId,
+  this.userId
+).subscribe({
           next: () => {
             Swal.fire({
               icon: 'success',
@@ -212,11 +244,13 @@ export class HierarchyConfigurationComponent {
     this.isEditMode = false;
   }
 
-  getManagerName(managerId?: number): string {
-    if (!managerId) return '-';
-    const manager = this.managers.find(m => m.userId === managerId);
-    return manager ? manager.fullName : '-';
-  }
+getManagerName(managerId?: number | null): string {
+
+  if (!managerId) return '-';
+
+  const manager = this.users.find(u => u.userId === managerId);
+  return manager ? manager.fullName : '-';
+}
 
   // ================= PAGINATION =================
   nextPage(): void {
