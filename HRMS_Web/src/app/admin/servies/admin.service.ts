@@ -763,7 +763,8 @@ export class AdminService {
   //   return this.delete('UserManagement/deleteUser', id);
   // }
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/UserManagement/GetAllUsers?userCompanyId=`+ (sessionStorage.getItem('UserId') ? Number(sessionStorage.getItem('UserId')) : 0));
+    const userId = sessionStorage.getItem('UserId') ? Number(sessionStorage.getItem('UserId')) : 0;
+    return this.http.get<User[]>(`${this.baseUrl}/UserManagement/GetAllUsers/${userId}`);  
   }
    GetcmpregAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.baseUrl}/UserManagement/GetcmpregAllUsers?companyId=`+ (sessionStorage.getItem('CompanyId') ? Number(sessionStorage.getItem('CompanyId')) : 0)+'&&regionId='+(sessionStorage.getItem('RegionId') ? Number(sessionStorage.getItem('RegionId')) : 0));
@@ -1639,7 +1640,6 @@ downloadDDCopy(fileName: string): Observable<Blob> {
   }
 
  addShift(model: ShiftMasterDto): Observable<any> {
-   
     return this.http.post(`${this.baseUrl}/Attendance/AddShift`, model);
   }
     updateShift(model: ShiftMasterDto): Observable<any> {

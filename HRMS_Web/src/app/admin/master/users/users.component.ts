@@ -24,7 +24,6 @@ filteredDepartments: any[] = [];
   constructor(private userService: AdminService) {}
 
   ngOnInit(): void {
-    debugger;   
     this.generateNextEmployeeCode();
     this.loadUsers();
     this.loadCompanies();
@@ -33,9 +32,18 @@ filteredDepartments: any[] = [];
     this.loadDepartments();
   }
 loadDepartments(): void {
+  debugger;
   this.userService.getDepartments(this.userId).subscribe({
-    next: (res: any) => (this.departments = res.data.data),
-    error: () => this.showError('Failed to load departments.')
+    next: (res: any) => {
+      console.log(res);
+      debugger;
+      this.departments = res?.data?.data ?? [];
+      console.log("Departments Loaded:", this.departments);
+    },
+    error: (err) => {
+      console.error(err);
+      this.showError('Failed to load departments.');
+    }
   });
 }
   getEmptyUser(): User {
@@ -56,7 +64,6 @@ loadDepartments(): void {
   }
 getreporting(id:any)
 {
-debugger;
 }  
 onStatusChange(event: Event): void {
     const input = event.target as HTMLInputElement | null;
@@ -81,7 +88,6 @@ onStatusChange(event: Event): void {
     this.user.regionId = 0;
     this.user.roleId = 0;
     this.user.departmentId = 0;
-  
     this.filteredRegions = companyId
     ? this.regions.filter(r => Number(r.companyID) === Number(companyId))
     : [];
@@ -97,16 +103,27 @@ onStatusChange(event: Event): void {
     this.filteredDepartments = [];
     return;
   }
-  this.filteredRoles = this.roles.filter(
-    r => r.companyId === this.user.companyId && r.regionId === regionId
+  this.filteredRoles = this.roles.filter(r =>
+    Number(r.companyId) === Number(this.user.companyId) &&
+    Number(r.regionId) === Number(regionId)
   );
-  this.filteredDepartments = this.departments.filter(
-    d => d.companyID === this.user.companyId && d.regionID === regionId
+  this.filterDepartments();
+}
+filterDepartments(): void {
+  if (!this.user.companyId || !this.user.regionId) {
+    this.filteredDepartments = [];
+    return;
+  }
+
+  this.filteredDepartments = this.departments.filter(d =>
+    Number(d.companyId) === Number(this.user.companyId) &&
+    Number(d.regionId) === Number(this.user.regionId)
   );
+
+  console.log("Filtered Departments:", this.filteredDepartments);
 }
 
     loadCompanies(): void {
-      debugger;
       this.userService.getCompanies(null,this.userId).subscribe({
         next: (res:any) => (this.companies = res),
         error: () => Swal.fire('Error', 'Failed to load companies.', 'error')
@@ -143,7 +160,6 @@ onStatusChange(event: Event): void {
 
  // 🔹 Auto-generate Employee Code (Frontend only)
  generateNextEmployeeCode(): void {
-  debugger;
   // If no users exist yet
   if (!this.users || this.users.length === 0) {
     this.user.employeeCode = 'EMP0001';
@@ -169,7 +185,6 @@ onStatusChange(event: Event): void {
 }
 
   onSubmit(): void {
-    debugger;
     if (this.isEditMode) {
       this.userService.updateUser(this.user).subscribe({
         next: () => {
@@ -195,18 +210,13 @@ onStatusChange(event: Event): void {
   editUser(u: User): void {
     this.user = { ...u };
     this.isEditMode = true;
-    this.filteredRegions = this.regions.filter(
-    r => Number(r.companyID) === Number(this.user.companyId)
-  );
-  this.filteredRegions = this.regions.filter(
-    r => Number(r.companyID) === Number(this.user.companyId)
+    
+  this.filteredRegions = this.regions.filter(r =>
+    Number(r.companyID) === Number(this.user.companyId)
   );
   if (this.user.regionId) {
     this.onRegionChange(this.user.regionId);
-  } else {
-    this.filteredRoles = [];
-    this.filteredDepartments = [];
-  }
+  } 
   }
 
   deleteUser(u: User): void {
