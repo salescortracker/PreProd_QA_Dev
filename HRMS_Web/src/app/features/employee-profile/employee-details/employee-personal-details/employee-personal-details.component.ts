@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
   styleUrl: './employee-personal-details.component.css'
 })
 export class EmployeePersonalDetailsComponent {
+  employmentTypeList: any[] = [];
 personalForm!: FormGroup;
   selectedFile: File | null = null;
 userId = Number(sessionStorage.getItem('UserId') ?? 0);
@@ -32,11 +33,24 @@ username: any=sessionStorage.getItem('Name');
     
     this.createForm();
     this.loadAll();
+    this.loadEmploymentTypes();
     this.loadgender();
      if (this.userId > 0) {
       this.loadByUserId();
     }
   }
+  loadEmploymentTypes() {
+  this.service
+    .GetEmploymentTypes(this.userId, this.companyId, this.regionId)
+    .subscribe({
+      next: (res) => {
+        this.employmentTypeList = res;
+      },
+      error: (err) => {
+        console.error('Error loading employment types', err);
+      }
+    });
+}
   genderList: any[] = [];
    loadgender() {
     this.service.Getempgender(this.userId,this.companyId,this.regionId).subscribe(res => {
@@ -95,7 +109,7 @@ username: any=sessionStorage.getItem('Name');
       brandGrade: [''],
       esicNumber: [''],
       pfNumber: [''],
-      employmentType: [''],
+      employmentTypeId: [''],
       dateofJoining: [''],
       companyId: sessionStorage.getItem('CompanyId') || 1,
       regionId: sessionStorage.getItem('RegionId') || 1,
