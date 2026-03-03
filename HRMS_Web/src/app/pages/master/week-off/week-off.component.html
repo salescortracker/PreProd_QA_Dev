@@ -18,10 +18,19 @@
                     <div class="row g-3">
 
                         <!-- Weekoff Date -->
+                        <!-- Weekoff Day -->
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Weekoff Date *</label>
-                            <input type="date" class="form-control" name="WeekoffDate" [(ngModel)]="weekoff.WeekoffDate"
-                                required>
+                            <label class="form-label fw-semibold">Weekoff Day *</label>
+
+                            <select class="form-select" name="WeekoffDate" [(ngModel)]="weekoff.WeekoffDate" required>
+
+                                <option value="">-- Select Day --</option>
+
+                                <option *ngFor="let day of weekDays" [value]="day">
+                                    {{ day }}
+                                </option>
+
+                            </select>
                         </div>
 
                         <!-- Company -->
@@ -108,7 +117,7 @@
 
                         <tr *ngFor="let w of filteredWeekoffs(); let i = index">
                             <td>{{ i + 1 }}</td>
-                            <td>{{ w.WeekoffDate | date:'dd-MM-yyyy' }}</td>
+                            <td>{{ w.WeekoffDate }}</td>
                             <td>{{ companyMap[w.CompanyID] || '—' }}</td>
                             <td>{{ regionMap[w.RegionID] || '—' }}</td>
 
