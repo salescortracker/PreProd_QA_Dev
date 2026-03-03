@@ -25,16 +25,16 @@
               <label class="form-label fw-semibold">Company <span class="text-danger">*</span></label>
               <select class="form-select" name="CompanyID" [(ngModel)]="user.companyId" (ngModelChange)="onCompanyChange($event)" required>
                 <option value="">Select Company</option>
-                <option *ngFor="let c of companies" [value]="c.companyId">{{ c.companyName }}</option>
+                <option *ngFor="let c of companies" [ngValue]="c.companyId">{{ c.companyName }}</option>
               </select>
             </div>
 
             <!-- Region -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Region <span class="text-danger">*</span></label>
-               <select class="form-select" name="RegionID" [(ngModel)]="user.regionId" (ngModelChange)="onRegionChange($event)" required>
+               <select class="form-select" name="RegionID" [(ngModel)]="user.regionId" (change)="onRegionChange(user.regionId)" required>
                 <option value="">Select Region</option>
-                  <option *ngFor="let r of filteredRegions" [value]="r.regionID">{{ r.regionName }}</option>
+                  <option *ngFor="let r of filteredRegions" [ngValue]="r.regionID">{{ r.regionName }}</option>
               </select>
             </div>
 
@@ -62,9 +62,9 @@
             <!-- Role -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-              <select class="form-select" name="Role" [(ngModel)]="user.roleId" required>
+              <select class="form-select" name="Role" [(ngModel)]="user.roleId" [disabled]="!user.regionId" required>
                 <option value="">Select Role</option>
-                <option *ngFor="let r of roles" [value]="r.roleId">{{ r.roleName }}</option>
+                <option *ngFor="let r of filteredRoles" [value]="r.roleId">{{ r.roleName }}</option>
               </select>
             </div>
 
@@ -82,10 +82,10 @@
      <!-- Department -->
   <div class="col-md-6">
             <label class="form-label fw-semibold">Department <span class="text-danger">*</span></label>
-            <select class="form-select" name="DepartmentId" [(ngModel)]="user.departmentId" required>
-              <option value="">Select Department</option>
-              <option *ngFor="let d of departments" [value]="d.departmentId">
-                {{ d.description }}
+            <select class="form-select" name="DepartmentId" [(ngModel)]="user.departmentId" [disabled]="user.regionId == 0" required>
+              <option [ngValue]="0">Select Department</option>
+              <option *ngFor="let d of filteredDepartments" [ngValue]="d.departmentId">
+                {{ d.departmentName }}
               </option>
             </select>
           </div>
