@@ -440,6 +440,13 @@ export interface User {
   status: string;
   userCompanyId?: number; // ✅ added for tracking which company the user belongs to
 }
+export interface MyTeamUsers {
+  userId: number;
+  fullName: string;
+  designation: string;
+  departmentId: number;
+  reportingTo: number;
+}
 
 export interface MenuMaster {
   menuID: number;
@@ -1708,9 +1715,16 @@ deleteKpiCategory(id: any) {
 }
 
 //------------------------------EmployeeMasterService-------------------------------------//
-getAllEmployees() {
+
+getAllUsersForMyTeamConfigurations(userId: number) {
+  return this.http.get<MyTeamUsers[]>(
+    `${environment.apiUrl}/UserManagement/GetAllUsers/${userId}`
+  );
+}
+
+getAllEmployees(userId: number) {
   return this.http.get<EmployeeMaster[]>(
-    `${environment.apiUrl}/UserManagement/GetAllEmployees`
+    `${environment.apiUrl}/UserManagement/GetAllEmployees/${userId}`
   );
 }
 
@@ -1721,23 +1735,23 @@ createEmployee(dto: EmployeeMaster) {
   );
 }
 
-updateEmployee(id: number, dto: EmployeeMaster) {
+updateEmployee(id: number, userId: number, dto: EmployeeMaster) {
   return this.http.post(
-    `${environment.apiUrl}/UserManagement/UpdateEmployee/${id}`,
+    `${environment.apiUrl}/UserManagement/UpdateEmployee/${id}/${userId}`,
     dto
   );
 }
 
-deleteEmployee(id: number) {
+deleteEmployee(id: number, userId: number) {
   return this.http.post(
-    `${environment.apiUrl}/UserManagement/DeleteEmployee/${id}`,
+    `${environment.apiUrl}/UserManagement/DeleteEmployee/${id}/${userId}`,
     {}
   );
 }
 
-getManagers() {
+getManagers(userId: number) {
   return this.http.get<ManagerDropdown[]>(
-    `${environment.apiUrl}/UserManagement/GetManagers`
+    `${environment.apiUrl}/UserManagement/GetManagers/${userId}`
   );
 }
 //------------------------------My Team Hierarchy Service-------------------------------------//

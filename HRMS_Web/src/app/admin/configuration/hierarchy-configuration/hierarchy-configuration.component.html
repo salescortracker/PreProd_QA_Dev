@@ -11,43 +11,46 @@
 
           <div class="col-md-3">
             <label class="form-label">Full Name</label>
-            <input type="text"
-                   [(ngModel)]="newEmployee.fullName"
-                   name="fullName"
-                   class="form-control"
-                   required />
+            <select class="form-select"
+        [(ngModel)]="newEmployee.employeeMasterId"
+        name="employeeSelect"
+        (change)="onUserSelect(newEmployee.employeeMasterId)"
+        required>
+
+  <option [ngValue]="undefined">Select User</option>
+
+  <option *ngFor="let u of users" [ngValue]="u.userId">
+    {{ u.fullName }}
+  </option>
+
+</select>
           </div>
 
           <div class="col-md-3">
             <label class="form-label">Role</label>
             <input type="text"
-                   [(ngModel)]="newEmployee.role"
-                   name="role"
-                   class="form-control"
-                   placeholder="Enter Role"
-                   required />
+       [(ngModel)]="newEmployee.role"
+       name="role"
+       class="form-control"
+       readonly />
           </div>
 
           <div class="col-md-3">
             <label class="form-label">Department</label>
-            <input type="text"
-                   [(ngModel)]="newEmployee.department"
-                   name="department"
-                   class="form-control"
-                   required />
+          <input type="text"
+       [(ngModel)]="newEmployee.department"
+       name="department"
+       class="form-control"
+       readonly />
           </div>
 
-          <div class="col-md-3">
-            <label class="form-label">Manager</label>
-            <select class="form-select"
-                    [(ngModel)]="newEmployee.managerId"
-                    name="managerId">
-              <option [ngValue]="undefined">Select Manager</option>
-              <option *ngFor="let m of managers" [ngValue]="m.userId">
-                {{ m.fullName }}
-              </option>
-            </select>
-          </div>
+<div class="col-md-3">
+  <label class="form-label">Manager</label>
+  <input type="text"
+         class="form-control"
+         [value]="getManagerName(newEmployee.managerId)"
+         readonly />
+</div>
 
           <div class="col-12 text-end mt-2">
             <button type="submit" class="btn btn-success me-2">
