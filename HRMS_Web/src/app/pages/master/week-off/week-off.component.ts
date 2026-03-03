@@ -18,6 +18,15 @@ export interface Weekoff {
   styleUrl: './week-off.component.css'
 })
 export class WeekOffComponent {
+  weekDays: string[] = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+];
  searchText = '';
   weekoffList: Weekoff[] = [];
   weekoff!: Weekoff;
