@@ -44,11 +44,8 @@
              <select
                   class="form-select"
                   name="CompanyId"
-                  [(ngModel)]="companyId"
-                 
-                 
+                  [(ngModel)]="companyId" (change)="onCompanyChange()"
                   required>
-
                 <option [ngValue]="null">-- Select Company --</option>
                 <option *ngFor="let c of companies" [ngValue]="c.companyId">
                   {{ c.companyName }}
@@ -62,11 +59,11 @@
                 class="form-select"
                 name="RegionId"
                 [(ngModel)]="regionId"
-                
+                [disabled]="!companyId"
               
                 required>
                 <option [ngValue]="null">-- Select Region --</option>
-                <option *ngFor="let r of regions" [ngValue]="r.regionID">
+                <option *ngFor="let r of filteredRegions" [ngValue]="r.regionID">
                   {{ r.regionName }}
                 </option>
               </select>
