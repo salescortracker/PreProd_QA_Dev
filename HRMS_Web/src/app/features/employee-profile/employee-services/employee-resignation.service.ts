@@ -218,6 +218,7 @@ approveLeave(leaveId: number) {
 }
 
 rejectLeave(leaveId: number) {
+  debugger;
   return this.http.post(`${this.apiUrl}/RejectByManager/${leaveId}`, {});
 }
 
@@ -226,7 +227,7 @@ bulkApprove(ids: number[]) {
 }
 
 bulkReject(ids: number[]) {
-  return this.http.post(`${this.apiUrl}/Leave/BulkReject`, ids);
+  return this.http.post(`${this.apiUrl}/BulkReject`, ids);
 }
 
 // get user leaves (employee view)
@@ -273,8 +274,9 @@ getManagerLeaves(managerId: number) {
   // -------------------------------
   // SHIFT ALLOCATION
   // -------------------------------
-  getAllAllocations(): Observable<ShiftAllocationDto[]> {
-    return this.http.get<ShiftAllocationDto[]>(`${environment.apiUrl}/attendance/GetAllAllocations`);
+  getAllAllocations(userId: number): Observable<ShiftAllocationDto[]> {
+    debugger;
+    return this.http.get<ShiftAllocationDto[]>(`${environment.apiUrl}/attendance/GetAllAllocations/${userId}`);
   }
 
   getAllocationById(id: number): Observable<ShiftAllocationDto> {

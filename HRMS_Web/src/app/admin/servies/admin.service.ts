@@ -1531,8 +1531,8 @@ deleteEmployeeDocument(id: number): Observable<any> {
 }
 
 //--------------------------------BANK - DETAILS-----------------------------------//
-getBankDetails(): Observable<BankDetails[]> {
-  return this.http.get<BankDetails[]>(`${this.baseUrl}/employee/GetAllBankDetails`);
+getBankDetails(userId: number): Observable<BankDetails[]> {
+  return this.http.get<BankDetails[]>(`${this.baseUrl}/employee/GetAllBankDetails/${userId}`);
 }
 
 getBankDetailById(id: number): Observable<BankDetails> {
@@ -1555,8 +1555,8 @@ deleteBankDetail(id: number): Observable<void> {
    
 //------------------------------DD LIST -----------------------------------------//
 
-getAllDdlist(): Observable<EmployeeDdlist[]> {
-  return this.http.get<EmployeeDdlist[]>(`${this.baseUrl}/employee/GetAllDdlist`);
+getAllDdlist(userId: number): Observable<EmployeeDdlist[]> {
+  return this.http.get<EmployeeDdlist[]>(`${this.baseUrl}/employee/GetAllDdlist/${userId}`);
 }
 
 createDdlist(dd: EmployeeDdlist): Observable<EmployeeDdlist> {
@@ -1589,8 +1589,9 @@ downloadDDCopy(fileName: string): Observable<Blob> {
 
   //-------------------------------------W4 usa ---------------------------------//
 
-  getW4List(): Observable<W4Details[]> {
-    return this.http.get<W4Details[]>(`${this.baseUrl}/employee/GetAllW4s`);
+  getW4List(userId: number): Observable<W4Details[]> {
+    debugger;
+    return this.http.get<W4Details[]>(`${this.baseUrl}/employee/GetAllW4s/${userId}`);
   }
 
   getW4ById(id: number): Observable<W4Details> {

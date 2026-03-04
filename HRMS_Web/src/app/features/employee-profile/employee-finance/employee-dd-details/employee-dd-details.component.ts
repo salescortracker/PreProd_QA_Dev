@@ -69,7 +69,7 @@ ddForm!: FormGroup;
   /** Load DD list */
   loadDDList() {
     this.loading = true;
-    this.adminService.getAllDdlist().subscribe({
+    this.adminService.getAllDdlist(this.userId).subscribe({
       next: (list) => {
         this.ddList = list;
         this.updatePagination();

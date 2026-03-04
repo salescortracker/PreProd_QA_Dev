@@ -26,6 +26,7 @@ export class ShiftAllocationComponent {
   currentUserId: number = 0;
   currentUserCompanyId: number = 0;
   currentUserRegionId: number = 0;
+  
 
   constructor(private fb: FormBuilder,private adminSvc: AdminService, private svc: EmployeeResignationService) {
     this.todayStr = formatDate(new Date(), 'yyyy-MM-dd', 'en-US');
@@ -108,7 +109,7 @@ export class ShiftAllocationComponent {
 
   loadAllocations() {
     this.loading = true;
-    this.svc.getAllAllocations().subscribe(
+    this.svc.getAllAllocations(this.currentUserId).subscribe(
       (r:any) => {
         this.allocations = (r || []).slice().sort((a:any, b:any) => {
           const da = a.startDate ? new Date(a.startDate).getTime() : 0;

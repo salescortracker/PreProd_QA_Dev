@@ -18,7 +18,7 @@ companyId!: number;
 
   companies: any[] = [];
   regions: any[] = [];
-
+  filteredRegions: any[] = [];
   expense: ExpenseCategory = this.getEmptyExpenseCategory();
   expenseList: ExpenseCategory[] = [];
 
@@ -233,6 +233,23 @@ sortTable(column: string): void {
     this.sortDirection = 'asc';
   }
 }
+onCompanyChange(): void {
+  this.regionId = 0;
+
+  if (!this.companyId) {
+    this.filteredRegions = [];
+    return;
+  }
+
+  this.filteredRegions = this.regions.filter(r =>
+    Number(r.companyID) === Number(this.companyId)
+  );
+}
+onRegionChange(): void {
+  if (this.companyId && this.regionId) {
+    this.loadExpenseCategory();
+  }
+}
   loadCompanies(): void {
       this.admin.getCompanies(null,this.userId).subscribe({
         next: (res:any) => (this.companies = res),
@@ -242,7 +259,12 @@ sortTable(column: string): void {
 
     loadRegions(): void {
       this.admin.getRegions(null,this.userId).subscribe({
-        next: (res:any) => (this.regions = res),
+        next: (res: any) => {
+      this.regions = res;
+      this.filteredRegions = this.regions.filter(r =>
+        Number(r.companyID) === Number(this.companyId)
+      ); 
+    },
         error: () => Swal.fire('Error', 'Failed to load regions.', 'error')
       });
     }

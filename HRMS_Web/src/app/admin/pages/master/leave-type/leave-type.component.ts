@@ -14,6 +14,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 export class LeaveTypeComponent {
    companies: Company[] = [];
   regions: Region[] = [];
+  filteredRegions: any[] = [];
 companyLoaded = false;
 userId = Number(sessionStorage.getItem("UserId"));
   companyId: number = Number(sessionStorage.getItem('CompanyId')) || 0;
@@ -45,7 +46,6 @@ companyMap: { [key: number]: string } = {};
   ngOnInit(): void {
     this.loadRegions();
     this.loadCompanies();
-    
     this.loadLeaveType();
   }
 
@@ -71,10 +71,18 @@ getEmptyLeaveType(): any {
     sessionStorage.setItem('CompanyId', this.companyId.toString());
 
     this.regionId = 0;
-    this.regions = [];
     this.leave.CompanyID = this.companyId;
+    this.leave.RegionID = 0;
+    if (!this.companyId) {
+    this.filteredRegions = [];
+    return;
+  }
 
-    this.loadRegions();
+  this.filteredRegions = this.regions.filter(r =>
+    Number(r.companyID) === Number(this.companyId)
+  );
+
+  console.log("Filtered Regions:", this.filteredRegions);
   }
 
   onRegionChange(): void {
@@ -303,9 +311,21 @@ loadCompanies(): void {
   }
 
   loadRegions(): void {
-    this.admin.getRegions(null,this.userId).subscribe({
-      next: (res:any) => (this.regions = res),
-      error: () => Swal.fire('Error', 'Failed to load regions.', 'error')
-    });
-  }
+  this.spinner.show();
+
+  this.admin.getRegions(null, this.userId).subscribe({
+    next: (res: any) => {
+      this.regions = res || [];
+      this.filteredRegions = [];  
+      this.spinner.hide();
+      if (this.companyId) {
+        this.onCompanyChange();
+      }
+    },
+    error: () => {
+      this.spinner.hide();
+      Swal.fire('Error', 'Failed to load regions.', 'error');
+    }
+  });
+}
 }
