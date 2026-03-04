@@ -14,6 +14,8 @@ export class EmployeeDocumentComponent {
   sortColumn: keyof EmployeeDocument | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
  documentTypes: any[] = [];
+employeeName: string = '';
+  employeeCode: string = '';
 
   // Pagination
   pageSize = 5;
@@ -54,6 +56,22 @@ ngOnInit() {
       this.userId = Number(sessionStorage.getItem("UserId"));
     this.companyId = Number(sessionStorage.getItem("CompanyId"));
     this.regionId = Number(sessionStorage.getItem("RegionId"));
+     this.employeeName = sessionStorage.getItem('Name') || 
+                      sessionStorage.getItem('EmployeeName') || 
+                      '';
+  this.employeeCode = sessionStorage.getItem('EmployeeCode') || '';
+  
+  // Optional: Try to get from currentUser object if available
+  const currentUser = sessionStorage.getItem('currentUser');
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser);
+      this.employeeName = user.fullName || user.employeeName || this.employeeName;
+      this.employeeCode = user.employeeCode || this.employeeCode;
+    } catch (e) {
+      console.error('Error parsing currentUser', e);
+    }
+  }
  
 }
 

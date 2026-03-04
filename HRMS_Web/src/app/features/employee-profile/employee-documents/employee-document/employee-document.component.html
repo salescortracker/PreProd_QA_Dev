@@ -1,5 +1,36 @@
 <form (ngSubmit)="saveDocument()" novalidate>
   <div class="row mb-3">
+
+
+    <div class="row mb-3">
+    <!-- Employee Name -->
+    <div class="col-md-4">
+      <label class="form-label">
+        <i class="fa-solid fa-user me-1 text-primary"></i>
+        Employee Name <span class="text-danger">*</span>
+      </label>
+      <input type="text"
+             class="form-control bg-light"
+             [(ngModel)]="employeeName"
+             name="employeeName"
+             readonly>
+      
+    </div>
+
+    <!-- Employee Code -->
+    <div class="col-md-4">
+      <label class="form-label">
+        <i class="fa-solid fa-id-card me-1 text-primary"></i>
+        Employee Code <span class="text-danger">*</span>
+      </label>
+      <input type="text"
+             class="form-control bg-light"
+             [(ngModel)]="employeeCode"
+             name="employeeCode"
+             readonly>
+      
+    </div>
+  </div>
     <div class="col-md-4">
       <label class="form-label">
         Document Type <span class="text-danger">*</span>
@@ -61,6 +92,8 @@
       </div>
 
     </div>
+
+    
   </div>
 
   <div class="row mb-3">
@@ -87,6 +120,7 @@
       </div>
 
     </div>
+    
 
     <div class="col-md-4">
       <label class="form-label">
@@ -120,6 +154,7 @@
     </div>
 
     <div class="col-md-4 text-end">
+      <br>
       <button type="submit" class="btn btn-primary me-2">
         {{ editId ? 'Update Document' : 'Add Document' }}
       </button>

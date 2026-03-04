@@ -1,29 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { EmployeeForm } from '../../../../admin/layout/models/employee-forms.model';
 import Swal from 'sweetalert2';
 import { AdminService } from '../../../../admin/servies/admin.service';
 import { environment } from '../../../../../environments/environment';
+
 @Component({
   selector: 'app-employee-forms',
   standalone: false,
   templateUrl: './employee-forms.component.html',
-  styleUrl: './employee-forms.component.css'
+  styleUrls: ['./employee-forms.component.css']
 })
-export class EmployeeFormsComponent {
-// ---------- STATIC DATA LIST ----------
+export class EmployeeFormsComponent implements OnInit {
+  // ---------- DATA LIST ----------
   formsList: EmployeeForm[] = [];
 
   // -------- FORM BINDING VARIABLES --------
   documentTypeId: number | string = "";
-
   documentName: string = "";
-  employeeCode: string = "";
   issuedDate: string = "";
   remarks: string = "";
   confidential: boolean = false;
   fileName: string = "";
   
-
   selectedFile: File | null = null;
 
   // EDIT MODE
@@ -34,6 +32,7 @@ export class EmployeeFormsComponent {
   showValidation = false;
   fileError = '';
   dateError = '';
+  isSubmitting = false;
 
   // Sorting
   sortColumn: keyof EmployeeForm | null = null;
@@ -50,70 +49,167 @@ export class EmployeeFormsComponent {
 
   // Search & confidentiality
   searchTerm: string = '';
-  showConfidential: boolean = true; // toggle to hide/show confidential in listing
-  isAdmin = true; // simulate role
+  showConfidential: boolean = true;
+  isAdmin = true;
+  
+  // Document types
   documentTypes: any[] = [];
+
+  // Employee selection
+  employees: any[] = [];
+  selectedEmployees: { code: string; name: string }[] = [];
+  showEmployeeDropdown = false;
+  employeeSearchTerm = '';
+  filteredEmployees: any[] = [];
+  
+  today: string = new Date().toISOString().split('T')[0];
+
   constructor(private adminService: AdminService) {}
- ngOnInit() {
-   
-   this.userId = Number(sessionStorage.getItem("UserId"));
+
+  ngOnInit() {
+    this.userId = Number(sessionStorage.getItem("UserId"));
     this.companyId = Number(sessionStorage.getItem("CompanyId"));
     this.regionId = Number(sessionStorage.getItem("RegionId"));
     this.loadDocumentTypes();
-    // this.loadEmployeeForms();
- }
- 
- loadEmployeeForms() {
-  this.adminService.getEmployeeFormsByEmployeeId(this.userId).subscribe({
-    next: (res) => {
-      this.formsList = res.map((api: any) => {
+    this.loadEmployees();
+  }
 
-        // find matching document type from loaded dropdown list
-        const typeObj = this.documentTypes.find(d => d.id == api.documentTypeId);
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.employee-selector-wrapper')) {
+      this.showEmployeeDropdown = false;
+    }
+  }
 
-        return {
-          id: api.id,
-          type: typeObj ? typeObj.typeName : '',   // <-- FIX HERE
-          name: api.documentName,
-          employee: api.employeeCode,
-          date: api.issueDate,
-          remarks: api.remarks,
-          confidential: api.isConfidential,
-          fileName: api.fileName 
-          || api.uploadFileName
-          || api.uploadFile
-          || api.filePath
-          || api.fileUrl
-          || ''
+  loadEmployees() {
+    this.adminService.getEmployeesByCompanyAndRegion(this.companyId, this.regionId).subscribe({
+      next: (res: any) => {
+        this.employees = res.data || [];
+        this.filteredEmployees = [...this.employees];
+      },
+      error: (err) => {
+        console.error('Failed to load employees', err);
+        this.employees = [];
+        this.filteredEmployees = [];
+      }
+    });
+  }
 
+  loadDocumentTypes() {
+    this.adminService.getActiveDocumentTypes().subscribe({
+      next: (res: any) => {
+        this.documentTypes = res;
+        this.loadEmployeeForms();
+      },
+      error: (err) => {
+        console.error('Failed to load document types', err);
+      }
+    });
+  }
 
-        };
-      });
-    },
-    error: (err) => console.error(err)
-  });
+  loadEmployeeForms() {
+    this.adminService.getEmployeeFormsByEmployeeId(this.userId).subscribe({
+      next: (res: any) => {
+        this.formsList = res.map((api: any) => {
+          const typeObj = this.documentTypes.find(d => d.id == api.documentTypeId);
+          return {
+            id: api.id,
+            type: typeObj ? typeObj.typeName : '',
+            name: api.documentName,
+            employee: `${api.employeeName} (${api.employeeCode})`, // Show name with code
+            employeeCode: api.employeeCode,
+            employeeName: api.employeeName,
+            date: api.issueDate,
+            remarks: api.remarks,
+            confidential: api.isConfidential,
+            fileName: api.fileName || api.uploadFileName || api.uploadFile || api.filePath || api.fileUrl || ''
+          };
+        });
+        this.updatePagination();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  // Employee selection methods
+  toggleEmployeeDropdown() {
+    this.showEmployeeDropdown = !this.showEmployeeDropdown;
+    if (this.showEmployeeDropdown) {
+      this.filterEmployees();
+    }
+  }
+
+  closeEmployeeDropdown() {
+    this.showEmployeeDropdown = false;
+  }
+
+  filterEmployees() {
+    if (!this.employeeSearchTerm) {
+      this.filteredEmployees = [...this.employees];
+    } else {
+      const term = this.employeeSearchTerm.toLowerCase();
+      this.filteredEmployees = this.employees.filter(emp =>
+        emp.employeeCode.toLowerCase().includes(term) ||
+        emp.employeeName.toLowerCase().includes(term)
+      );
+    }
+  }
+
+isEmployeeSelected(code: string): boolean {
+  return this.selectedEmployees.some(e => e.code === code);
 }
 
+  isAllEmployeesSelected(): boolean {
+    return this.selectedEmployees.length === this.employees.length && this.employees.length > 0;
+  }
 
- loadDocumentTypes() {
-   this.adminService.getActiveDocumentTypes().subscribe({
-     next: (res: any) => {
-       this.documentTypes = res; 
-       this.loadEmployeeForms();    
-     },
-     error: (err) => {
-       console.error('Failed to load document types', err);
-     }
-   });
- }
+  toggleAllEmployees(event: any) {
+    if (event.target.checked) {
+      this.selectedEmployees = this.employees.map(emp => ({
+        code: emp.employeeCode,
+        name: emp.employeeName
+      }));
+    } else {
+      this.selectedEmployees = [];
+    }
+  }
 
-  // ---------------- FILE UPLOAD ----------------
+  toggleEmployee(emp: any) {
+    const index = this.selectedEmployees.findIndex(e => e.code === emp.employeeCode);
+    if (index === -1) {
+      this.selectedEmployees.push({
+        code: emp.employeeCode,
+        name: emp.employeeName
+      });
+    } else {
+      this.selectedEmployees.splice(index, 1);
+    }
+  }
+
+  applyEmployeeSelection() {
+    this.showEmployeeDropdown = false;
+  }
+
+  getSelectedEmployeesDisplay(): string {
+    if (this.selectedEmployees.length === 0) {
+      return 'Select employees...';
+    }
+    if (this.selectedEmployees.length === 1) {
+      return this.selectedEmployees[0].name;
+    }
+    return `${this.selectedEmployees.length} employees selected`;
+  }
+
+  // File upload
   onFileSelect(event: any) {
     this.fileError = '';
-    const f: File = event.target.files?.[0];
-    if (!f) return;
+    const file: File = event.target.files?.[0];
+    if (!file) return;
+    
     const allowed = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    
     if (!allowed.includes(ext)) {
       this.selectedFile = null;
       this.fileName = '';
@@ -121,157 +217,167 @@ export class EmployeeFormsComponent {
       Swal.fire({ icon: 'error', title: 'Invalid File Type', text: this.fileError });
       return;
     }
-    if (f.size > 5 * 1024 * 1024) {
+    
+    if (file.size > 5 * 1024 * 1024) {
       this.selectedFile = null;
       this.fileName = '';
       this.fileError = 'File too large. Max 5 MB';
       Swal.fire({ icon: 'error', title: 'File Too Large', text: this.fileError });
       return;
     }
-    this.selectedFile = f;
-    this.fileName = f.name;
+    
+    this.selectedFile = file;
+    this.fileName = file.name;
   }
 
-  // viewDocument(fileName: string) {
-  //   if (!fileName) {
-  //     Swal.fire('File not found!', '', 'error');
-  //     return;
-  //   }
-  
-  //   const fileUrl = `${environment.apiUrl}/uploads/EmployeeForms/${fileName}`;
-  
-  //   const link = document.createElement('a');
-  //   link.href = fileUrl;
-  //   link.target = "_blank"; 
-  //   link.download = fileName;
-  //   link.click();
-  // }
-
- viewDocument(path: string,download = false) {
-    this.adminService.ViewDocument(path, download);
+  viewDocument(path: string, download = false) {
+    this.adminService.ViewDocument(environment.LettersPath + path, download);
   }
 
-  // ---------------- ADD / UPDATE FORM ----------------
-onSubmit() {
-  this.showValidation = true;
-  this.dateError = '';
-  this.fileError = '';
+  // Submit form
+  onSubmit() {
+    this.showValidation = true;
+    this.dateError = '';
+    this.fileError = '';
 
-  if (!this.documentTypeId || !this.documentName || !this.employeeCode || !this.issuedDate || !this.selectedFile) {
-
-
-    Swal.fire({ icon: 'warning', title: 'Required fields missing', text: 'Please fill all required fields.' });
-    return;
-  }
-
-  const formData = new FormData();
-   if (this.editId) {
-    formData.append("Id", this.editId.toString());
-  }
-  formData.append("DocumentTypeId", this.documentTypeId.toString());
-
-  formData.append("DocumentName", this.documentName);
-  formData.append("EmployeeCode", this.employeeCode);
-  formData.append("IssueDate", this.issuedDate);
-  formData.append("Remarks", this.remarks ?? "");
-  formData.append("IsConfidential", this.confidential ? "true" : "false");
-  formData.append("UserId", this.userId.toString());
-  formData.append("CompanyId", this.companyId.toString());
-  formData.append("RegionId", this.regionId.toString());
-  
-
-  if (this.selectedFile) {
-    formData.append("UploadFile", this.selectedFile);
-
-  }
-
-  if (this.isEdit && this.editId) {
-    // ---------- PUT ----------
-    this.adminService.updateEmployeeForms(this.editId, formData).subscribe({
-      next: () => {
-        Swal.fire({ icon: 'success', title: 'Updated!', text: 'Record updated successfully.' });
-        this.loadEmployeeForms();
-        this.resetFormInternal();
-      },
-      error: (err) => {
-        console.error(err);
-        Swal.fire('Error', 'Failed to update record', 'error');
-      }
-    });
-  } else {
-    // ---------- POST ----------
-    this.adminService.addEmployeeForms(formData).subscribe({
-      next: () => {
-        Swal.fire({ icon: 'success', title: 'Saved!', text: 'Form uploaded successfully.' });
-        this.loadEmployeeForms();
-        this.resetFormInternal();
-      },
-      error: (err) => {
-        console.error(err);
-        Swal.fire('Error', 'Failed to upload form', 'error');
-      }
-    });
-  }
-}
-
-
-  // ---------------- EDIT ----------------
-  editRecord(record: EmployeeForm) {
-  this.isEdit = true;
-  this.editId = record.id;
-
-  const docType = this.documentTypes.find(d => d.typeName === record.type);
-  this.documentTypeId = docType ? docType.id : '';
-  this.documentName = record.name;
-  this.employeeCode = record.employee;
-  this.issuedDate = record.date;
-  this.remarks = record.remarks;
-  this.confidential = record.confidential;
-  this.fileName = record.fileName;
-
-  this.selectedFile = null; // user may upload new file
-
-  Swal.fire({ icon: 'info', title: 'Edit Mode', text: 'Form loaded for editing.' });
-}
-
-
-  // ---------------- VIEW FILE ----------------
-  viewFile(f: EmployeeForm) {
-    if (f.confidential && !this.isAdmin) {
-      Swal.fire('Access Denied', 'You are not authorized to view this confidential file.', 'error');
+    // Validation
+    if (!this.documentTypeId || !this.documentName || this.selectedEmployees.length === 0 || !this.issuedDate) {
+      Swal.fire({ 
+        icon: 'warning', 
+        title: 'Required fields missing', 
+        text: 'Please fill all required fields.' 
+      });
       return;
     }
-    // in real app you'd open a URL; for demo show filename
-    Swal.fire({ title: 'File', text: `Open file: ${f.fileName}`, icon: 'info' });
+
+    if (!this.selectedFile && !this.isEdit) {
+      Swal.fire({ 
+        icon: 'warning', 
+        title: 'File required', 
+        text: 'Please select a file to upload.' 
+      });
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    // Create records for each selected employee
+    const savePromises = this.selectedEmployees.map(emp => {
+      const formData = new FormData();
+      
+      if (this.editId) {
+        formData.append("Id", this.editId.toString());
+      }
+      
+      formData.append("DocumentTypeId", this.documentTypeId.toString());
+      formData.append("DocumentName", this.documentName);
+      formData.append("EmployeeCode", emp.code);
+      formData.append("EmployeeName", emp.name);
+      formData.append("IssueDate", this.issuedDate);
+      formData.append("Remarks", this.remarks ?? "");
+      formData.append("IsConfidential", this.confidential ? "true" : "false");
+      formData.append("UserId", this.userId.toString());
+      formData.append("CompanyId", this.companyId.toString());
+      formData.append("RegionId", this.regionId.toString());
+
+      if (this.selectedFile) {
+        formData.append("UploadFile", this.selectedFile);
+      }
+
+      if (this.isEdit && this.editId) {
+        return this.adminService.updateEmployeeForms(this.editId, formData).toPromise();
+      } else {
+        return this.adminService.addEmployeeForms(formData).toPromise();
+      }
+    });
+
+    // Execute all saves
+    Promise.all(savePromises)
+      .then(() => {
+        Swal.fire({ 
+          icon: 'success', 
+          title: this.isEdit ? 'Updated!' : 'Saved!', 
+          text: `${savePromises.length} record(s) ${this.isEdit ? 'updated' : 'saved'} successfully.` 
+        });
+        this.loadEmployeeForms();
+        this.resetFormInternal();
+      })
+      .catch(err => {
+        console.error(err);
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: `Failed to ${this.isEdit ? 'update' : 'save'} records` 
+        });
+      })
+      .finally(() => {
+        this.isSubmitting = false;
+      });
   }
 
-  // ---------------- DELETE ----------------
-deleteRecord(id: number) {
-  Swal.fire({
-    title: 'Are you sure you want to delete this record?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, Delete',
-    cancelButtonText: 'Cancel'
-  }).then(result => {
-    if (result.isConfirmed) {
-      this.adminService.deleteEmployeeForms(id).subscribe({
-        next: () => {
-          Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Record removed successfully.' });
-          this.loadEmployeeForms();
-          if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
-        },
-        error: (err) => {
-          console.error(err);
-          Swal.fire('Error', 'Failed to delete record', 'error');
-        }
-      });
-    }
-  });
-}
+  // Edit record
+  editRecord(record: any) {
+    this.isEdit = true;
+    this.editId = record.id;
 
+    const docType = this.documentTypes.find(d => d.typeName === record.type);
+    this.documentTypeId = docType ? docType.id : '';
+    this.documentName = record.name;
+    this.issuedDate = record.date;
+    this.remarks = record.remarks;
+    this.confidential = record.confidential;
+    this.fileName = record.fileName;
 
-  // ---------------- RESET ----------------
+    // Set selected employee
+    this.selectedEmployees = [{
+      code: record.employeeCode,
+      name: record.employeeName
+    }];
+
+    this.selectedFile = null;
+    this.showValidation = false;
+
+    Swal.fire({ 
+      icon: 'info', 
+      title: 'Edit Mode', 
+      text: 'Form loaded for editing.',
+      timer: 1500
+    });
+  }
+
+  // Delete record
+  deleteRecord(id: number) {
+    Swal.fire({
+      title: 'Are you sure you want to delete this record?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.adminService.deleteEmployeeForms(id).subscribe({
+          next: () => {
+            Swal.fire({ 
+              icon: 'success', 
+              title: 'Deleted!', 
+              text: 'Record removed successfully.',
+              timer: 1500
+            });
+            this.loadEmployeeForms();
+            if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+          },
+          error: (err) => {
+            console.error(err);
+            Swal.fire('Error', 'Failed to delete record', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // Reset form
   onReset() {
     Swal.fire({
       title: 'Reset form?',
@@ -283,35 +389,30 @@ deleteRecord(id: number) {
     }).then(res => {
       if (res.isConfirmed) {
         this.resetFormInternal();
-        Swal.fire({ icon: 'success', title: 'Reset', text: 'Form cleared.' });
+        Swal.fire({ icon: 'success', title: 'Reset', text: 'Form cleared.', timer: 1500 });
       }
     });
   }
-  getTypeName(id: number): string {
-  const found = this.documentTypes.find(x => x.id === id);
-  return found ? found.typeName : '';
-}
 
+  private resetFormInternal() {
+    this.documentTypeId = "";
+    this.documentName = "";
+    this.issuedDate = "";
+    this.remarks = "";
+    this.confidential = false;
+    this.fileName = "";
+    this.selectedFile = null;
+    this.isEdit = false;
+    this.editId = null;
+    this.showValidation = false;
+    this.fileError = '';
+    this.dateError = '';
+    this.selectedEmployees = [];
+    this.employeeSearchTerm = '';
+    this.showEmployeeDropdown = false;
+  }
 
-private resetFormInternal() {
-  this.documentTypeId  = "";
-  this.documentName = "";
-  this.employeeCode = "";
-  this.issuedDate = "";
-  this.remarks = "";
-  this.confidential = false;
-  this.fileName = "";
-  this.selectedFile = null;
-  this.isEdit = false;
-  this.editId = null;
-  this.showValidation = false;
-  this.fileError = '';
-  this.dateError = '';
-  this.currentPage = 1;
-}
-
-
-  // ---------------- SORTING ----------------
+  // Sorting
   sortBy(column: keyof EmployeeForm) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -337,7 +438,7 @@ private resetFormInternal() {
     return data;
   }
 
-  // ---------------- FILTER + PAGINATION ----------------
+  // Filter + Pagination
   private filtered(): EmployeeForm[] {
     const term = this.searchTerm.trim().toLowerCase();
 
@@ -382,7 +483,11 @@ private resetFormInternal() {
     this.currentPage = 1;
   }
 
-  // ---------------- HELPERS ----------------
+  updatePagination() {
+    this.currentPage = 1;
+  }
+
+  // Helpers
   formatDate(dateStr?: string) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -392,10 +497,6 @@ private resetFormInternal() {
     const yyyy = d.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
   }
-
-  // onTypeChange() {
-  //   // placeholder for conditional behaviour if required per type
-  // }
 
   onDateChange() {
     this.dateError = '';
