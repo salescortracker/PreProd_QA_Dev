@@ -85,8 +85,8 @@ export class EmployeeW4DetailsComponent {
   }
 
   // ------------------- Load W4 List -------------------
-  loadW4List() {
-    this.adminService.getW4List().subscribe({
+  loadW4List(userId: number = this.userId) {
+    this.adminService.getW4List(userId).subscribe({
       next: (data) => this.w4List = data,
       error: () => Swal.fire('Error', 'Failed to load W4 list', 'error')
     });

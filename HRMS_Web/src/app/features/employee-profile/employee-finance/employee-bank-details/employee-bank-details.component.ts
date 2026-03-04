@@ -70,11 +70,21 @@ export class EmployeeBankDetailsComponent {
 
   /** Load Bank Details */
   loadBankDetails() {
-    this.adminService.getBankDetails().subscribe({
-      next: (res) => this.bankList = res,
-      error: (err) => Swal.fire('Error', 'Failed to load bank details', 'error')
-    });
+  if (!this.userId) {
+    console.error("UserId missing");
+    return;
   }
+
+  this.adminService.getBankDetails(this.userId).subscribe({
+    next: (res) => {
+      console.log("My Bank Data:", res);
+      this.bankList = res;
+    },
+    error: () => {
+      Swal.fire('Error', 'Failed to load bank details', 'error');
+    }
+  });
+}
 
   /** Save / Update Bank Details */
   saveBankDetails() {

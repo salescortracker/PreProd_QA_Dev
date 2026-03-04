@@ -38,7 +38,7 @@
           <div class="col-md-4">
             <label class="form-label fw-semibold">Company</label>
             <select class="form-select"
-                    [(ngModel)]="companyId"
+                    [(ngModel)]="companyId" (change)="onCompanyChange()"
                     name="companyId"
                    >
               <option value="">Select Company</option>
@@ -52,12 +52,12 @@
           <div class="col-md-4">
             <label class="form-label fw-semibold">Region</label>
             <select class="form-select"
-                    [(ngModel)]="regionId"
+                    [(ngModel)]="regionId" (change)="onRegionChange()"
                     name="regionId"
                   
                     >
               <option value="">Select Region</option>
-              <option *ngFor="let r of regions" [value]="r.regionID">
+              <option *ngFor="let r of filteredRegions" [value]="r.regionID">
                 {{ r.regionName }}
               </option>
             </select>
