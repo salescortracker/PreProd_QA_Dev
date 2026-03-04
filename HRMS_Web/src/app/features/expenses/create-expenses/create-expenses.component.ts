@@ -106,6 +106,7 @@ expenseForm!: FormGroup;
   }
 
   loadCategories(): void {
+    this.expenseForm.get('departmentName')?.disable();
     this.expenseService.getExpenseCategories().subscribe(res => {
       if (res.success) this.categories = res.data;
     });

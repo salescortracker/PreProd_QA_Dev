@@ -1473,6 +1473,14 @@ getEmployeeLettersByEmployeeId(employeeId: number): Observable<EmployeeLetter[]>
     `${this.baseUrl}/employee/GetLettersByUser/${employeeId}`
   );
 }
+
+
+getEmployeesByCompanyAndRegion(companyId: number, regionId: number): Observable<any[]> {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/employee/GetByCompanyAndRegion/${companyId}/${regionId}`
+  );
+}
+
 // POST - Add new employee letter
 addEmployeeLetter(formData: FormData): Observable<any> {
   return this.http.post(`${this.baseUrl}/employee/AddLetter`, formData);
