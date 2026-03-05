@@ -25,15 +25,11 @@ export class InterviewComponent {
   isEditMode = false;
   editingCandidateId: number | null = null;
 
-  departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ];
+   designations: any[] = [];
+  departments: any[] = [];
   interviewForm: any = { level: 1, interviewer: '', dt: '', location: '', cabin: '', result: 'Pending', feedback: '' };
-  levels = [1, 2];
+  levels: any[] = [];
+
   // -------------------- SORTING --------------------
   topSortColumn: string | null = null;
   topSortDirection: 'asc' | 'desc' = 'asc';
@@ -66,10 +62,37 @@ export class InterviewComponent {
 
     this.loadInterviewUsers();
     this.loadInterviewRecords();
+     this.loadDesignations();
+      this.loadInterviewLevels();
   }
+  loadInterviewLevels() {
+  this.recruitmentService
+    .getInterviewLevels(this.companyId, this.regionId)
+    .subscribe({
+      next: (res: any) => {
+        this.levels = res;
+      },
+      error: () => {
+        Swal.fire('Error', 'Failed to load interview levels', 'error');
+      }
+    });
+}
+
+    loadDesignations() {
+        this.recruitmentService
+          .getDesignations(this.companyId, this.regionId)
+          .subscribe({
+            next: (res: any) => {
+              this.designations = res;
+            },
+            error: () => {
+              Swal.fire('Error', 'Failed to load designations', 'error');
+            }
+          });
+      }
   loadInterviewUsers() {
     this.recruitmentService
-      .getReferenceUsers()
+      .getReferenceUsers(this.companyId, this.regionId)
       .subscribe({
         next: (res:any) => {
           this.interviewer = res;
@@ -78,6 +101,19 @@ export class InterviewComponent {
           Swal.fire('Error', 'Failed to load reference users', 'error');
         }
       });
+  }
+     onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.interviewForm.designationId
+    );
+
+    if (selected) {
+      this.interviewForm.department = selected.departmentName || 'Not Assigned';
+      this.interviewForm.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.interviewForm.department = '';
+      this.interviewForm.designation = '';
+    }
   }
 
  updateInterview() {

@@ -38,12 +38,25 @@ export class DesignationComponent {
     this.loadCompanies();
     this.loadRegions();
     this.loadDesignations();
+   this.loadDepartments();
      
   }
+  departments: any[] = [];
+
+loadDepartments(): void {
+  this.adminservice.getDepartments(this.userId).subscribe({
+    next: (res: any) => {
+      this.departments = res?.data?.data || [];
+    },
+    error: () => {
+      Swal.fire('Error', 'Failed to load departments.', 'error');
+    }
+  });
+}
 companies:any;
 regions:any;
   loadCompanies(): void {
-    debugger;
+   
     this.adminservice.getCompanies(null,this.userId).subscribe({
       next: (res:any) => (this.companies = res),
       error: () => Swal.fire('Error', 'Failed to load companies.', 'error')
@@ -78,19 +91,19 @@ regions:any;
   // ------------------------------------------------------------
   // 🔹 Empty Designation Model
   // ------------------------------------------------------------
-  getEmptyDesignation(): Designation {
-    return {
-      designationID: 0,
-      companyId: 0,
-      regionId: 0,
-      designationName: '',
-      description: '',
-      isActive: true,
-      userId:Number(sessionStorage.getItem("UserId")),
-      companyName:'',
-      regionName:''
-    };
-  }
+getEmptyDesignation(): Designation {
+  return {
+    designationID: 0,
+    companyId: 0,
+    regionId: 0,
+    departmentId: 0,
+    designationName: '',
+    isActive: true,
+    userId: Number(sessionStorage.getItem("UserId")),
+    companyName: '',
+    regionName: ''
+  };
+}
  changePageSize(event: any): void {
     this.pageSize = +event.target.value;
     this.currentPage = 1;
@@ -233,7 +246,7 @@ regions:any;
   exportExcel() {
     const exportData = this.designations.map(d => ({
       'Designation Name': d.designationName,
-      'Description': d.description || '',
+      
       'Department Name': (d as any).departmentName || '',
       'Company Name': (d as any).companyName || '',
       'Region Name': (d as any).regionName || '',
@@ -256,7 +269,7 @@ regions:any;
       d.isActive ? 'Active' : 'Inactive'
     ]);
     autoTable(doc, {
-      head: [['Designation Name', 'Description', 'Department', 'Company', 'Region', 'Status']],
+      head: [['Designation Name', 'Department', 'Company', 'Region', 'Status']],
       body: exportData
     });
     doc.save('DesignationList.pdf');

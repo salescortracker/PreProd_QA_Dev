@@ -64,6 +64,9 @@ import { SubmenuComponent } from './layout/submenu/submenu.component';
 import { WelcomedemoComponent } from './pages/welcomedemo/welcomedemo.component';
 import { ShiftsComponent } from './pages/shifts/shifts.component';
 import { ResignationmasterComponent } from './master/resignationmaster/resignationmaster.component';
+import { RecruitmentNoticePeriodComponent } from './pages/master/recruitment-notice-period/recruitment-notice-period.component';
+import { ScreeningResultComponent } from './pages/master/screening-result/screening-result.component';
+import { InterviewLevelComponent } from './pages/master/interview-level/interview-level.component';
 
 @NgModule({
   declarations: [
@@ -129,7 +132,10 @@ import { ResignationmasterComponent } from './master/resignationmaster/resignati
     SubmenuComponent,
     WelcomedemoComponent,
     ShiftsComponent,
-    ResignationmasterComponent
+    ResignationmasterComponent,
+    RecruitmentNoticePeriodComponent,
+    ScreeningResultComponent,
+    InterviewLevelComponent
  
   
 

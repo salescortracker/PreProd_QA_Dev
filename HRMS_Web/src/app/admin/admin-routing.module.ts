@@ -60,6 +60,9 @@ import { ShiftsComponent } from './pages/shifts/shifts.component';
 import { PayGroupsComponent } from '../pages/payroll/pay-groups/pay-groups.component';
 import { EarningDeductionsComponent } from '../pages/payroll/earning-deductions/earning-deductions.component';
 import { ResignationmasterComponent } from './master/resignationmaster/resignationmaster.component';
+import { RecruitmentNoticePeriodComponent } from './pages/master/recruitment-notice-period/recruitment-notice-period.component';
+import { ScreeningResultComponent } from './pages/master/screening-result/screening-result.component';
+import { InterviewLevelComponent } from './pages/master/interview-level/interview-level.component';
 
 const routes: Routes = [
   {
@@ -126,6 +129,9 @@ const routes: Routes = [
       { path: 'week-off', component: WeekOffComponent },
         { path: 'shifts', component: ShiftsComponent },
          { path: 'resignationmaster', component: ResignationmasterComponent },
+         { path: 'recruitment-notice-period',component: RecruitmentNoticePeriodComponent},
+         { path: 'screening-result', component: ScreeningResultComponent },
+         { path: 'interview-level', component: InterviewLevelComponent },
 
       // Add more admin pages here
     ]

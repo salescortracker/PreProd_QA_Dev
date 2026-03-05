@@ -11,9 +11,28 @@ export class RecruitmentService {
   ///////////////////////////////////////////////////////
 //////////////Resuem Upload - Recruitment /////////////
 ///////////////////////////////////////////////////////
-  getReferenceUsers() {
+getDesignations(companyId: number, regionId: number) {
   return this.http.get<any[]>(
-    `${this.baseUrl}/Recruitment/GetReferenceUsers`
+    `${this.baseUrl}/Recruitment/GetDesignations/${companyId}/${regionId}`
+  );
+}
+getMaritalStatuses(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetMaritalStatuses/${companyId}/${regionId}`
+  );
+}
+
+
+
+getNoticePeriods(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetNoticePeriods/${companyId}/${regionId}`
+  );
+}
+
+  getReferenceUsers(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetReferenceUsers/${companyId}/${regionId}`
   );
 }
   // 🔹 Stage Master
@@ -39,9 +58,8 @@ export class RecruitmentService {
     );
   }
 deleteCandidate(candidateId: number) {
-  return this.http.post(
-    `${this.baseUrl}/Recruitment/DeleteCandidate`,
-    candidateId
+  return this.http.delete(
+    `${this.baseUrl}/Recruitment/DeleteCandidate/${candidateId}`
   );
 }
 
@@ -51,7 +69,7 @@ getCandidateById(candidateId: number) {
   );
 }
 updateCandidate(formData: FormData) {
-  return this.http.post(
+  return this.http.put(
     `${this.baseUrl}/Recruitment/UpdateCandidate`,
     formData
   );
@@ -77,10 +95,14 @@ parseResume(file: File) {
 ///////screening Service ///////////
 
 
-
-getRecruiterseUsers() {
+getScreeningResults(companyId: number, regionId: number) {
   return this.http.get<any[]>(
-    `${this.baseUrl}/Recruitment/GetRecruiters`
+    `${this.baseUrl}/Recruitment/GetScreeningResults/${companyId}/${regionId}`
+  );
+}
+getRecruiterseUsers(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetRecruiters/${companyId}/${regionId}`
   );
 }
 getScreeningCandidatesTopTable(
@@ -115,12 +137,19 @@ getScreeningRecords(userId: number,companyId: number, regionId: number): Observa
   );
 }
 updateCandidateScreening(payload: any): Observable<any> {
-  return this.http.post(`${this.baseUrl}/Recruitment/UpdateScreening`, payload);
+  return this.http.put(`${this.baseUrl}/Recruitment/UpdateScreening`, payload);
 }
 
 
 
 //////////////Interview Service /////////////
+
+getInterviewLevels(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetInterviewLevels/${companyId}/${regionId}`
+  );
+}
+
 getScreeningCandidatesTopTableInterview(
   companyId: number,
   regionId: number,
@@ -158,9 +187,9 @@ updateCandidateInterview(payload: any) {
   );
 }
 // 🔹 Appointment Screen
-getAppointments(interviewerId: number) {
+getAppointments(companyId: number, regionId: number,interviewerId: number) {
   return this.http.get<any[]>(
-    `${this.baseUrl}/Recruitment/GetAppointments/${interviewerId}`
+    `${this.baseUrl}/Recruitment/GetAppointments/${companyId}/${regionId}/${interviewerId}`
   );
 }
 getAppointmentCandidateDetails(candidateId: number) {

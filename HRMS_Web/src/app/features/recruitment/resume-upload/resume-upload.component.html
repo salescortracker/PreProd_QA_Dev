@@ -69,8 +69,9 @@
             <label class="form-label">Gender</label>
             <select class="form-select" [(ngModel)]="candidate.gender" name="gender">
               <option value="">Select</option>
-              <option>Male</option>
-              <option>Female</option>
+              <option *ngFor="let g of genders" [value]="g.genderName">
+                {{ g.genderName }}
+              </option>
             </select>
           </div>
 
@@ -88,10 +89,13 @@
             <label>Marital Status</label>
             <select class="form-select" [(ngModel)]="candidate.maritalStatus" name="maritalStatus">
               <option value="">Select</option>
-              <option>Single</option>
-              <option>Married</option>
+              <option *ngFor="let ms of maritalStatuses" [value]="ms.maritalStatusName">
+                {{ ms.maritalStatusName }}
+              </option>
             </select>
           </div>
+
+
 
           <!-- Current Salary -->
           <div class="col-md-3">
@@ -145,33 +149,30 @@
             </div>
           </div>
 
-          <!-- Department -->
-          <div class="col-md-3">
-            <label>Department</label>
-            <select class="form-select" [(ngModel)]="candidate.department" name="department">
-              <option value="">Select</option>
-              <option *ngFor="let d of departments" [value]="d">
-                {{ d }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Designation -->
           <div class="col-md-3">
             <label>
               Designation <span class="text-danger">*</span>
             </label>
-            <select class="form-select" [(ngModel)]="candidate.designation" name="designation" required
-              #designation="ngModel">
+            <select class="form-select" [(ngModel)]="candidate.designationId" name="designation"
+              (change)="onDesignationChange()" required #designation="ngModel">
               <option value="">Select</option>
-              <option *ngFor="let des of designations" [value]="des">
-                {{ des }}
+              <option *ngFor="let des of designations" [value]="des.designationId">
+                {{ des.designationName }}
               </option>
             </select>
             <small class="text-danger" *ngIf="designation.invalid && designation.touched">
               Designation is required
             </small>
           </div>
+
+
+          <!-- Department -->
+          <div class="col-md-3">
+            <label>Department</label>
+            <input class="form-control" [(ngModel)]="candidate.department" name="department" readonly>
+          </div>
+
+
 
           <!-- Skills -->
           <div class="col-md-3">
@@ -184,10 +185,9 @@
             <label>Notice Period</label>
             <select class="form-select" [(ngModel)]="candidate.noticePeriod" name="noticePeriod">
               <option value="">Select</option>
-              <option>Immediate</option>
-              <option>15 Days</option>
-              <option>30 Days</option>
-              <option>60 Days</option>
+              <option *ngFor="let np of noticePeriods" [value]="np.noticePeriod">
+                {{ np.noticePeriod }}
+              </option>
             </select>
           </div>
 
@@ -223,33 +223,26 @@
         <!-- INPUT ROW -->
         <div class="row g-2 align-items-end mb-2">
           <!-- From -->
+          <!-- From Date -->
           <div class="col-md-2">
-            <label class="form-label">From</label>
-            <select class="form-select" [(ngModel)]="expForm.from" name="expFromYear" (change)="onExpFromChange()">
-              <option value="">Select</option>
-              <option *ngFor="let y of years" [value]="y">{{ y }}</option>
-            </select>
-
+            <label class="form-label">From Date</label>
+            <input type="date" class="form-control" [(ngModel)]="expForm.from" name="expFromDate" [max]="today">
           </div>
 
-          <!-- To -->
+          <!-- To Date -->
           <div class="col-md-2">
-            <label class="form-label">To</label>
-            <select class="form-select" [(ngModel)]="expForm.to" name="expToYear">
-              <option value="">Select</option>
-              <option *ngFor="let y of expToYears" [value]="y">{{ y }}</option>
-            </select>
-
+            <label class="form-label">To Date</label>
+            <input type="date" class="form-control" [(ngModel)]="expForm.to" name="expToDate" [min]="expForm.from"
+              [max]="today">
           </div>
-
 
           <div class="col-md-3">
             <label class="form-label">Designation</label>
             <!-- <input class="form-control" [(ngModel)]="expForm.designation" name="expDesignation"> -->
             <select class="form-select" [(ngModel)]="expForm.designation" name="expDesignation">
               <option value="">Select</option>
-              <option *ngFor="let des of designations" [value]="des">
-                {{ des }}
+              <option *ngFor="let des of designations" [value]="des.designationName">
+                {{ des.designationName }}
               </option>
             </select>
           </div>

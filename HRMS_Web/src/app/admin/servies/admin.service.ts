@@ -197,6 +197,7 @@ export interface Designation {
   designationID: number;
   companyId: number;
   regionId: number;
+  departmentId: number;
   designationName: string;
   description?: string;
   isActive: boolean;
@@ -207,7 +208,8 @@ export interface Designation {
   isDeleted?: boolean;
   userId:number,
   companyName:string,
-  regionName:string
+  regionName:string,
+   departmentName?: string;
 }
 
 export interface AssetStatus {
@@ -918,6 +920,44 @@ bulkInsertData(entityName: string, data: any[]): Observable<any> {
   };
   return this.http.post(`${this.baseUrl}/UserManagement/BulkInsert`, payload);
 }
+////////////screening result CRUD operations
+
+getScreeningResults(userId: number) {
+  return this.http.get(`${this.baseUrl}/MasterData/screening-result?userId=${userId}`);
+}
+
+createScreeningResult(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/CreateScreeningResult`, data);
+}
+
+updateScreeningResult(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/UpdateScreeningResult`, data);
+}
+
+deleteScreeningResult(id: number) {
+  return this.http.post(`${this.baseUrl}/MasterData/DeleteScreeningResult?id=${id}`, {});
+}
+
+
+
+///////////////Interview Level// CRUD operations
+
+getInterviewLevels(userId: number) {
+  return this.http.get(`${this.baseUrl}/MasterData/interview-levels?userId=${userId}`);
+}
+
+createInterviewLevel(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/CreateInterviewLevel`, data);
+}
+
+updateInterviewLevel(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/UpdateInterviewLevel`, data);
+}
+
+deleteInterviewLevel(id: number) {
+  return this.http.post(`${this.baseUrl}/MasterData/DeleteInterviewLevel?id=${id}`, {});
+}
+
 // -------------------------------------------------------------
 // 🔹 DEPARTMENT OPERATIONS
 // -------------------------------------------------------------
@@ -940,9 +980,14 @@ updateDepartment(id: number, model: Department): Observable<any> {
 deleteDepartment(id: number): Observable<any> {
   return this.http.post(`/MasterData/DeleteDepartment/${id}`, {}); // soft delete
 }
+getDepartmentsForDropdown(companyId: number, regionId: number) {
+  return this.http.get(
+    `${this.baseUrl}/MasterData/GetDepartmentsForDropdown?companyId=${companyId}&regionId=${regionId}`
+  );
+}
 
 getDesignations(userId:number): Observable<Designation[]> {
-  debugger;
+ 
   return this.getAll<Designation>(`MasterData/GetDesignations?userId=`+userId);
 }
 
@@ -1405,6 +1450,26 @@ updateJobHistory(id: number, model: any): Observable<any> {
 // Delete job history
 deleteJobHistory(id: number): Observable<void> {
   return this.http.post<void>(`${this.baseUrl}/employee/deletejobhistory?id=${id}`, {});
+}
+
+
+
+// ================= Recruitment Notice Period =================
+
+getRecruitmentNoticePeriodList(userId: number) {
+  return this.http.get(`${this.baseUrl}/MasterData/recruitmentnoticeperiod-list?userId=${userId}`);
+}
+
+createRecruitmentNoticePeriod(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/CreateRecruitmentNoticePeriod`, data);
+}
+
+updateRecruitmentNoticePeriod(data: any) {
+  return this.http.post(`${this.baseUrl}/MasterData/UpdateRecruitmentNoticePeriod`, data);
+}
+
+deleteRecruitmentNoticePeriod(id: number) {
+  return this.http.post(`${this.baseUrl}/MasterData/DeleteRecruitmentNoticePeriod?id=${id}`, {});
 }
 
 //-----------Education Details APIs -----------------//
