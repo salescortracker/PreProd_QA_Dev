@@ -19,13 +19,7 @@ export class ScreeningComponent {
 
   screeningResult = 'Pass';
   screeningRemarks = '';
-  departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ];
+ 
   candidate: any = {
     appliedDate: '',
 
@@ -33,6 +27,7 @@ export class ScreeningComponent {
     designation: '',
 
   };
+  screeningResults: any[] = [];
   recruiters: any[] = [];
   screeningRecruiterId: number | null = null;
   userId!: number;
@@ -59,6 +54,8 @@ export class ScreeningComponent {
   // Bottom table
   bottomPageSize = 5;
   bottomCurrentPage = 1;
+  designations: any[] = [];
+  departments: any[] = [];
 
   constructor(private recruitmentService: RecruitmentService) { }
   ngOnInit(): void {
@@ -73,8 +70,34 @@ export class ScreeningComponent {
     }
     this.loadRecruitersUsers();
     this.loadScreeningRecords();
+    this.loadDesignations();
+    this.loadScreeningResults();
 
   }
+  loadScreeningResults() {
+  this.recruitmentService
+    .getScreeningResults(this.companyId, this.regionId)
+    .subscribe({
+      next: (res: any) => {
+        this.screeningResults = res;
+      },
+      error: () => {
+        Swal.fire('Error', 'Failed to load screening results', 'error');
+      }
+    });
+}
+   loadDesignations() {
+      this.recruitmentService
+        .getDesignations(this.companyId, this.regionId)
+        .subscribe({
+          next: (res: any) => {
+            this.designations = res;
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to load designations', 'error');
+          }
+        });
+    }
   loadScreeningRecords() {
     this.recruitmentService
       .getScreeningRecords(this.userId, this.companyId, this.regionId)
@@ -99,6 +122,19 @@ export class ScreeningComponent {
           Swal.fire('Error', 'Failed to load screening records', 'error');
         }
       });
+  }
+    onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.candidate.designationId
+    );
+
+    if (selected) {
+      this.candidate.department = selected.departmentName || 'Not Assigned';
+      this.candidate.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.candidate.department = '';
+      this.candidate.designation = '';
+    }
   }
 
   showResume() {
@@ -135,7 +171,7 @@ export class ScreeningComponent {
 
   loadRecruitersUsers() {
     this.recruitmentService
-      .getRecruiterseUsers()
+      .getRecruiterseUsers(this.companyId, this.regionId)
       .subscribe({
         next: (res:any) => {
           this.recruiters = res;

@@ -14,6 +14,7 @@ appointments: any[] = [];
    userId!: number;
   companyId!: number;
   regionId!: number;
+  interviewerId!: number;
   constructor(private service: RecruitmentService) {}
 ngOnInit() {
   this.userId = Number(sessionStorage.getItem("UserId"));
@@ -28,7 +29,7 @@ ngOnInit() {
   this.loadReporters();
 }
 loadAppointments() {
-    this.service.getAppointments(this.userId)
+    this.service.getAppointments(this.companyId, this.regionId, this.interviewerId)
       .subscribe(res => {
         this.appointments = res;
       });
