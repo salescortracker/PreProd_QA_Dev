@@ -3,65 +3,83 @@
 
 <div class="dashboard-header">
   <h2 class="dashboard-title">Company News</h2>
-  <nav class="breadcrumb">
-    <a href="#">Home</a> &gt;
-    <a href="#">More</a> &gt;
-    <span>Company News</span>
-  </nav>
 </div>
 
-<div class="tab-container p-4">
+<div class="container mt-4">
 
-  <!-- Filter Bar -->
-  <div class="filter-bar mb-4 p-3 bg-light rounded shadow-sm">
+  <!-- FILTER SECTION -->
+<!-- FILTER SECTION -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+
     <div class="row g-3">
-      
-      <!-- Category Dropdown (dynamic from admin department table) -->
-      <div class="col-md-3">
+
+      <!-- Category -->
+      <div class="col-md-4">
         <label class="form-label">Category</label>
         <select class="form-select" [(ngModel)]="searchCategory">
-          <option value="">Select Category</option>
-          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          <option value="">All Categories</option>
+          <option value="General">General</option>
+          <option value="HR Announcement">HR Announcement</option>
+          <option value="Policy Update">Policy Update</option>
+          <option value="Event">Event</option>
+          <option value="Holiday Notice">Holiday Notice</option>
+          <option value="Emergency">Emergency</option>
         </select>
       </div>
 
-      <!-- Date Filter -->
-      <div class="col-md-3">
-        <label class="form-label">Date</label>
+      <!-- Date -->
+      <div class="col-md-4">
+        <label class="form-label">Select Date</label>
         <input type="date" class="form-control" [(ngModel)]="searchDate">
       </div>
 
-      <!-- Filter Button -->
-      <div class="col-md-3 d-flex align-items-end">
-        <button class="btn btn-primary w-100" (click)="loadFilteredNews()">Filter</button>
+      <!-- Button -->
+      <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary w-100" (click)="applyFilter()">
+          Filter News
+        </button>
       </div>
 
     </div>
-  </div>
 
-  <!-- News Listing -->
-  <div class="news-list row g-4" *ngIf="newsList.length > 0; else noNews">
-    <!-- Single News Card -->
-    <div class="col-md-6 col-lg-4" *ngFor="let news of newsList">
-      <div class="news-card p-3 shadow-sm rounded bg-white h-100 d-flex flex-column justify-content-between">
-        <div>
-          <div class="news-header d-flex justify-content-between align-items-start">
-            <h5 class="fw-semibold mb-2">{{ news.Title }}</h5>
-            <span class="news-date text-muted">{{ news.Date | date:'dd-MMM-yyyy' }}</span>
+  </div>
+</div>
+
+  <!-- NEWS CARDS -->
+  <div class="row g-4" *ngIf="filteredNewsList.length > 0">
+
+    <div class="col-md-6 col-lg-4" *ngFor="let n of filteredNewsList">
+
+      <div class="card news-card shadow-sm h-100">
+
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="badge bg-primary">{{n.Category}}</span>
+            <small class="text-muted">
+              {{n.Date | date:'dd-MMM-yyyy'}}
+            </small>
           </div>
-          <span class="badge bg-info mb-2">{{ news.Category }}</span>
-          <p class="news-desc text-muted">{{ news.Description }}</p>
+
+          <h5 class="card-title">{{n.Title}}</h5>
+
+          <p class="card-text text-muted">
+            {{n.Description}}
+          </p>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- No news message -->
-  <ng-template #noNews>
-    <div class="col-12">
-      <p class="text-center text-muted">Select a category or date and click Filter to see news.</p>
-    </div>
-  </ng-template>
+  <!-- NO NEWS -->
+  <div *ngIf="filteredNewsList.length == 0" class="text-center mt-5">
+    <h5 class="text-muted">No news available for this day</h5>
+  </div>
 
 </div>
 

@@ -1346,3 +1346,21 @@ button:hover {
 #tab3:checked ~ #content3 {
   display: block;
 }
+.policy-card{
+transition: all 0.3s ease;
+border-radius: 10px;
+}
+
+.policy-card:hover{
+transform: translateY(-5px);
+box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.dashboard-header{
+margin-left:260px;
+padding:20px;
+}
+
+.dashboard-title{
+font-weight:600;
+}

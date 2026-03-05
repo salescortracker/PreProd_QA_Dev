@@ -5,6 +5,7 @@ interface NewsItem {
   Category: string;
   Description: string;
   Date: Date;
+  departmentId: number;
 }
 @Component({
   selector: 'app-comany-news',
@@ -12,53 +13,108 @@ interface NewsItem {
   templateUrl: './comany-news.component.html',
   styleUrl: './comany-news.component.css'
 })
-export class ComanyNewsComponent {
- // Array to store all news
- newsList: NewsItem[] = []; // filtered news
-  categories: string[] = [];
+export class ComanyNewsComponent implements OnInit {
+usersList: any[] = [];
+  newsList: NewsItem[] = []
+  filteredNewsList: NewsItem[] = []
 
-  searchCategory: string = '';
-  searchDate: string = '';
+  searchCategory: string = ''
+  searchDate: string = ''
+
+  userDepartmentId: number = 0
+  userId: number = 0
 
   constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
-    this.loadCategories(); // load categories dynamically
-    // Do NOT load news initially!
-  }
 
-  // Load categories dynamically from departments table
-  loadCategories() {
-    this.adminService.getallDepartments().subscribe({
-      next: (res) => {
-        this.categories = Array.from(
-          new Set(res.filter(d => d.isActive && d.description).map(d => d.description!))
-        );
-      },
-      error: (err) => console.error('Error fetching categories', err)
-    });
-  }
+    this.userId = Number(sessionStorage.getItem("UserId"))
+    this.userDepartmentId = Number(sessionStorage.getItem("DepartmentId"))
 
-  // Load filtered news from backend based on selected category & date
-  loadFilteredNews() {
-    if (!this.searchCategory && !this.searchDate) {
-      this.newsList = [];
-      return; // do nothing if no filter selected
+    console.log("UserId:", this.userId)
+    console.log("DepartmentId:", this.userDepartmentId)
+
+    this.getNews()
+ this.loadUsers();
+  }
+  loadUsers() {
+  this.adminService.getAllUsers().subscribe({
+    next: (res: any[]) => {
+      this.usersList = res;
+      console.log('Users List:', this.usersList);
+    },
+    error: (err) => {
+      console.error('Error loading users', err);
     }
+  });
+}
 
-    const category = this.searchCategory || undefined;
-    const date = this.searchDate || undefined;
+  // -----------------------------
+  // Get News
+  // -----------------------------
+  getNews() {
 
-    this.adminService.getFilteredNews(category, date).subscribe({
-      next: (res: any[]) => {
-        this.newsList = res.map(n => ({
-          Title: n.title,
-          Category: n.category,
-          Description: n.description,
-          Date: n.displayDate ? new Date(n.displayDate) : new Date()
-        }));
-      },
-      error: (err) => console.error('Error fetching filtered news', err)
-    });
+    this.adminService.getTodayNews(this.userId).subscribe((res: any[]) => {
+
+      console.log("API Response:", res)
+
+      this.newsList = res.map(n => ({
+        Title: n.title,
+        Category: n.category,
+        Description: n.description,
+        Date: new Date(n.postedDate),
+        departmentId: Number(n.departmentId)
+      }))
+
+      // Show today's news automatically
+      this.filterTodayNews()
+
+    })
+
   }
+
+  // -----------------------------
+  // Show Today's News
+  // -----------------------------
+  filterTodayNews() {
+
+  const today = new Date().toDateString();
+
+  this.filteredNewsList = this.newsList.filter(n => {
+
+    const newsDate = new Date(n.Date).toDateString();
+
+    return (
+      n.departmentId === this.userDepartmentId &&
+      newsDate === today
+    );
+
+  });
+
+}
+
+  // -----------------------------
+  // Apply Filter
+  // -----------------------------
+ applyFilter() {
+
+  this.filteredNewsList = this.newsList.filter(n => {
+
+    const newsDate = new Date(n.Date).toDateString();
+
+    const matchDept = n.departmentId === this.userDepartmentId;
+
+    const matchCategory = this.searchCategory
+      ? n.Category === this.searchCategory
+      : true;
+
+    const matchDate = this.searchDate
+      ? new Date(this.searchDate).toDateString() === newsDate
+      : true;
+
+    return matchDept && matchCategory && matchDate;
+
+  });
+
+}
 }

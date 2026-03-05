@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AdminService,Department,News } from '../../servies/admin.service';
+import { AdminService, Department, News } from '../../servies/admin.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import Swal from 'sweetalert2';
 @Component({
@@ -9,13 +9,18 @@ import Swal from 'sweetalert2';
   styleUrl: './company-news.component.css'
 })
 export class CompanyNewsComponent {
-   userId!: number;
+
+  companies: any[] = [];
+  regions: any[] = [];
+  userId!: number;
   companyId!: number;
   regionId!: number;
 
+
+
   // Departments & Categories
   departments: Department[] = [];
-  categories: string[] = [];
+  // categories: string[] = [];
 
   // News
   newsList: News[] = [];
@@ -29,18 +34,45 @@ export class CompanyNewsComponent {
   startDate: string = '';
   endDate: string = '';
 
-  constructor(private adminService: AdminService, private spinner: NgxSpinnerService) {}
+  constructor(private adminService: AdminService, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     this.userId = Number(sessionStorage.getItem("UserId"));
     this.companyId = Number(sessionStorage.getItem("CompanyId"));
     this.regionId = Number(sessionStorage.getItem("RegionId"));
+
     if (!this.userId) return;
 
+    this.loadCompanies();
+    this.loadRegions();
     this.loadDepartments();
     this.getNewsList();
   }
+  loadCompanies(): void {
+    this.adminService.getCompanies(null, this.userId).subscribe({
+      next: (res: any) => {
+        this.companies = res;
+      },
+      error: () => Swal.fire('Error', 'Failed to load companies', 'error')
+    });
+  }
 
+loadRegions(): void {
+  this.adminService.getRegions(null, this.userId).subscribe({
+    next: (res: any) => {
+      console.log("Regions API:", res); // debug
+      this.regions = res || [];
+    },
+    error: () => Swal.fire('Error', 'Failed to load regions', 'error')
+  });
+}
+
+ getDepartmentName(departmentId?: number | null): string {
+    if (!departmentId) return '-';
+
+    const dept = this.departments.find(d => d.departmentId === departmentId);
+    return dept ? dept.departmentName : '-';
+  }
   // -----------------------------
   // Load Departments
   // -----------------------------
@@ -48,10 +80,9 @@ export class CompanyNewsComponent {
     this.spinner.show();
     this.adminService.getallDepartments().subscribe({
       next: (data) => {
-        this.departments = data;
-        this.categories = Array.from(
-          new Set(data.filter(d => d.isActive && d.description).map(d => d.description!))
-        );
+        debugger;
+        // Only active departments
+        this.departments = data.filter(d => d.isActive);
         this.spinner.hide();
       },
       error: (err) => {
@@ -67,16 +98,23 @@ export class CompanyNewsComponent {
   // -----------------------------
   getNewsList() {
     this.spinner.show();
-    this.adminService.getAllNews().subscribe({
+    this.adminService.getAllNews(this.userId).subscribe({
       next: (res) => {
+        console.log("API Response:", res);
         this.newsList = res.map(item => ({
           NewsId: item.newsId,
+          CompanyId: item.companyId,
+          RegionId: item.regionId,
+          departmentId: item.departmentId,
           Title: item.title,
-          Category: item.category,
+          userId: item.userId,
+          Category: item.category ?? item.Category ?? '',
           Description: item.description,
-          Date: item.displayDate ? new Date(item.displayDate) : new Date(),
-          PublishedDate: item.displayDate ? new Date(item.displayDate).toISOString().split('T')[0] : '',
-          Attachment: null // file not returned by API
+          Date: item.postedDate ? new Date(item.postedDate) : new Date(),
+          PublishedDate: item.postedDate
+            ? new Date(item.postedDate).toISOString().split('T')[0]
+            : '',
+          Attachment: null
         }));
         this.spinner.hide();
       },
@@ -91,17 +129,26 @@ export class CompanyNewsComponent {
   // -----------------------------
   // Reset form
   // -----------------------------
-  resetNews(): News {
-    return {
-      NewsId: undefined,
-      Title: '',
-      Category: '',
-      Description: '',
-      Date: new Date(),
-      PublishedDate: '',
-      Attachment: null
-    };
-  }
+resetNews(): News {
+  return {
+    NewsId: undefined,
+    userId: this.userId,
+
+    CompanyId: this.companyId,
+    RegionId: this.regionId,
+
+    departmentId: null,
+
+    Title: '',
+    Category: '',
+    Description: '',
+
+    Date: new Date(),
+    PublishedDate: new Date().toISOString().split('T')[0],
+
+    Attachment: null
+  };
+}
 
   resetForm() {
     this.news = this.resetNews();
@@ -120,65 +167,72 @@ export class CompanyNewsComponent {
   // -----------------------------
   // Add / Update News
   // -----------------------------
-  onSubmit() {
-    debugger;
-    if (!this.news.Title || !this.news.Category) {
-      Swal.fire('Validation', 'Title and Category are required', 'warning');
-      return;
+onSubmit() {
+debugger;
+  const postedDate = this.news.PublishedDate
+    ? this.news.PublishedDate
+    : new Date().toISOString().split('T')[0];
+
+  const payload = {
+    newsId: this.news.NewsId ?? 0,
+
+    userId: this.userId,
+
+    companyId: Number(this.news.CompanyId ?? this.companyId),
+    regionId: Number(this.news.RegionId ?? this.regionId),
+
+    title: this.news.Title,
+    description: this.news.Description,
+    category: this.news.Category,
+
+    departmentId: this.news.departmentId
+      ? Number(this.news.departmentId)
+      : null,
+
+    postedDate: postedDate,
+
+    fromDate: postedDate,
+    toDate: postedDate,
+
+    expiryDate: null,
+    isActive: true,
+
+    createdBy: this.userId,
+    updatedBy: this.isEditMode ? this.userId : null
+  };
+
+  console.log("FINAL PAYLOAD:", payload);
+
+  this.spinner.show();
+
+  const request$ = this.isEditMode
+    ? this.adminService.updateNews(this.news.NewsId!, payload)
+    : this.adminService.saveNews(payload);
+
+  request$.subscribe({
+    next: () => {
+      Swal.fire('Success', 'News saved successfully', 'success');
+      this.getNewsList();
+      this.resetForm();
+      this.spinner.hide();
+    },
+    error: (err) => {
+      console.error('Error saving news', err);
+      Swal.fire('Error', 'Failed to save news', 'error');
+      this.spinner.hide();
     }
+  });
 
-    const formData = new FormData();
-    formData.append('Title', this.news.Title);
-    formData.append('Category', this.news.Category);
-    formData.append('Description', this.news.Description);
-
-    if (this.news.Attachment) formData.append('UploadFile', this.news.Attachment);
-
-    const displayDate = this.news.PublishedDate ? new Date(this.news.PublishedDate) : new Date();
-    const formattedDate = this.formatDate(displayDate);
-
-    formData.append('FromDate', formattedDate);
-    formData.append('ToDate', formattedDate);
-    formData.append('DisplayDate', displayDate.toISOString());
-    formData.append('CompanyId', this.companyId.toString());
-    formData.append('RegionId', this.regionId.toString());
-    formData.append('CreatedBy', this.userId.toString());
-
-
-
-    // ✅ Handle NewsId safely
-    const newsId = this.news.NewsId ?? 0;
-    formData.append('NewsId', newsId.toString());
-
-    // UpdatedBy only for edit
-    if (this.isEditMode) formData.append('UpdatedBy', this.userId.toString());
-
-    this.spinner.show();
-    const request$ = this.isEditMode
-      ? this.adminService.updateNews(formData)
-      : this.adminService.addNews(formData);
-
-    request$.subscribe({
-      next: (res) => {
-        Swal.fire('Success', res, 'success');
-        this.getNewsList();
-        this.resetForm();
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error adding/updating news', err);
-        Swal.fire('Error', 'Failed to add/update news', 'error');
-        this.spinner.hide();
-      }
-    });
-  }
-  formatDate(date: Date): string {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = ('0' + (d.getMonth() + 1)).slice(-2);
-  const day = ('0' + d.getDate()).slice(-2);
-  return `${year}-${month}-${day}`;
 }
+
+
+  formatDate(date: Date): string {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = ('0' + (d.getMonth() + 1)).slice(-2);
+    const day = ('0' + d.getDate()).slice(-2);
+    return `${year}-${month}-${day}`;
+  }
 
   // -----------------------------
   // Edit News
