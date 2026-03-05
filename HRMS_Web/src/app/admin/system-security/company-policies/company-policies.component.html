@@ -1,78 +1,181 @@
-<div class="card shadow-sm"> 
+<div class="card shadow-sm">
   <div class="container-fluid p-4 news-management">
 
-    <div class="dashboard-header">
-      <h2 class="dashboard-title">Manage Policies</h2>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-semibold">Company Policies</h4>
     </div>
+    <hr />
 
-    <hr/>
+    <!-- Form -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
 
-    <div class="p-4">
+        <form (ngSubmit)="onSubmit()" #policyForm="ngForm">
 
-      <!-- Add/Edit Form -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <form (ngSubmit)="onSubmit()" #policyForm="ngForm">
-            <div class="row g-3">
+          <div class="row g-3">
 
-              <div class="col-md-4">
-                <label class="form-label">Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" [(ngModel)]="policy.Title" name="Title" required>
-              </div>
+            <!-- Company -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Company</label>
+             <select class="form-select"
+        [(ngModel)]="policy.CompanyId"
+        name="CompanyId">
 
-              <div class="col-md-4">
-                <label class="form-label">Category <span class="text-danger">*</span></label>
-                <select class="form-select" [(ngModel)]="policy.CategoryId" name="CategoryId" required>
-                  <option value="">Select Category</option>
-                  <option *ngFor="let c of categories" [value]="c.PolicyCategoryID">{{ c.PolicyCategoryName }}</option>
-                </select>
-              </div>
+  <option [ngValue]="null">Select Company</option>
 
-              <div class="col-md-4">
-                <label class="form-label">Effective Date <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" [(ngModel)]="policy.EffectiveDate" name="EffectiveDate" required>
-              </div>
+  <option *ngFor="let c of companies"
+          [ngValue]="c.companyId">
+    {{c.companyName}}
+  </option>
 
-              <div class="col-md-6">
-                <label class="form-label">Upload Document</label>
-                <input type="file" class="form-control" (change)="onFileChange($event)">
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" [(ngModel)]="policy.Description" name="Description"></textarea>
-              </div>
-
-              <div class="col-12 text-end">
-                <button class="btn btn-success me-2" type="submit">{{ isEditMode ? 'Update' : 'Add Policy' }}</button>
-                <button class="btn btn-secondary" type="button" (click)="resetForm()">Reset</button>
-              </div>
-
+</select>
             </div>
-          </form>
-        </div>
-      </div>
 
-      <!-- Policies List -->
-      <div class="card">
-        <div class="card-body">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>S.No</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Effective Date</th>
-                <th>Description</th>
-                <th>Attachment</th>
-                <th class="text-center">Actions</th>
-              </tr>
-            </thead>
-         
-          </table>
-        </div>
-      </div>
+            <!-- Region -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Region</label>
+             <select class="form-select"
+        [(ngModel)]="policy.RegionId"
+        name="RegionId">
 
+  <option [ngValue]="null">Select Region</option>
+
+  <option *ngFor="let r of regions"
+          [ngValue]="r.regionId">
+    {{r.regionName}}
+  </option>
+
+</select>
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-6">
+              <label class="form-label">Department</label>
+              <select class="form-select" [(ngModel)]="policy.DepartmentId" name="DepartmentId">
+
+                <option value="">Select Department</option>
+
+                <option *ngFor="let d of departments" [value]="d.departmentId">
+                  {{d.departmentName}}
+                </option>
+
+              </select>
+            </div>
+
+            <!-- Title -->
+            <div class="col-md-6">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-control" [(ngModel)]="policy.Title" name="Title">
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select class="form-select" [(ngModel)]="policy.Category" name="Category">
+
+                <option value="">Select Category</option>
+
+                <option *ngFor="let c of categories" [value]="c">
+                  {{c}}
+                </option>
+
+              </select>
+            </div>
+
+            <!-- Effective Date -->
+            <div class="col-md-6">
+              <label class="form-label">Effective Date</label>
+              <input type="date" class="form-control" [(ngModel)]="policy.EffectiveDate" name="EffectiveDate">
+            </div>
+
+            <!-- Description -->
+            <div class="col-md-12">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="policy.Description" name="Description">
+</textarea>
+            </div>
+
+            <!-- File -->
+            <div class="col-md-6">
+              <label class="form-label">Attachment</label>
+              <input type="file" class="form-control" (change)="onFileSelected($event)">
+            </div>
+
+            <!-- Button -->
+            <div class="col-md-6 d-flex align-items-end">
+              <button type="submit" class="btn btn-dark w-100">
+
+                {{isEditMode ? 'Update' : 'Save Policy'}}
+
+              </button>
+            </div>
+
+          </div>
+
+        </form>
+
+      </div>
     </div>
+
+
+    <!-- TABLE -->
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <table class="table table-bordered table-hover">
+
+          <thead class="table-light">
+
+            <tr>
+              <th>S.No</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Effective Date</th>
+              <th>Description</th>
+              <th>Department</th>
+              <th class="text-center">Actions</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let p of policies; let i=index">
+
+              <td>{{i+1}}</td>
+
+              <td>{{p.Title}}</td>
+
+              <td>{{p.Category}}</td>
+
+              <td>{{p.EffectiveDate | date:'dd-MMM-yyyy'}}</td>
+
+              <td>{{p.Description}}</td>
+
+              <td>{{getDepartmentName(p.DepartmentId)}}</td>
+
+              <td class="text-center">
+
+                <button class="btn btn-sm btn-primary me-2" (click)="editPolicy(p)">
+                  Edit
+                </button>
+
+                <button class="btn btn-sm btn-danger" (click)="deletePolicy(p)">
+                  Delete
+                </button>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+
   </div>
 </div>

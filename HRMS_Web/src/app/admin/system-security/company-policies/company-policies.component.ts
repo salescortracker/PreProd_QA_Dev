@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { AdminService, Department } from '../../servies/admin.service';
 import Swal from 'sweetalert2';
-import { AdminService,CompanyPolicy,PolicyCategory } from '../../servies/admin.service';
+import { NgxSpinnerService } from 'ngx-spinner';
+
 
 interface Policy {
   Title: string;
@@ -17,146 +19,242 @@ interface Policy {
   styleUrl: './company-policies.component.css'
 })
 export class CompanyPoliciesComponent {
-  categories: PolicyCategory[] = [];
-  policies: CompanyPolicy[] = [];
-  policy: CompanyPolicy = this.resetPolicy();
 
-  isEditMode: boolean = false;
-   userId!: number;
-  companyId!: number;
-  regionId!: number;
+  companies: any[] = []
+  regions: any[] = []
+  departments: Department[] = []
 
-  constructor(private adminService: AdminService) {}
+  policies: any[] = []
 
-  ngOnInit(): void {
-     this.userId = Number(sessionStorage.getItem("UserId"));
-  this.companyId = Number(sessionStorage.getItem("CompanyId"));
-  this.regionId = Number(sessionStorage.getItem("RegionId"));
+  userId!: number
+  companyId!: number
+  regionId!: number
 
-  if (!this.userId) {
-    console.error("UserId missing in sessionStorage");
-    return;
+  isEditMode = false
+
+  policy: any = this.resetPolicy()
+
+  categories: string[] = [
+    "HR Policy",
+    "Leave Policy",
+    "Attendance Policy",
+    "IT Security Policy",
+    "Work From Home Policy",
+    "Travel Policy"
+  ]
+
+  constructor(
+    private adminService: AdminService,
+    private spinner: NgxSpinnerService
+  ) { }
+
+  ngOnInit() {
+
+    this.userId = Number(sessionStorage.getItem("UserId"))
+    this.companyId = Number(sessionStorage.getItem("CompanyId"))
+    this.regionId = Number(sessionStorage.getItem("RegionId"))
+
+    this.loadCompanies()
+    this.loadRegions()
+    this.loadDepartments()
+    this.getPolicies()
+
   }
 
-    this.loadCategoriesAndPolicies();
+  resetPolicy() {
+
+  return {
+
+    PolicyId: 0,
+    CompanyId: this.companyId || null,
+    RegionId: this.regionId || null,
+    DepartmentId: null,
+
+    Title: '',
+    Category: '',
+    EffectiveDate: new Date().toISOString().split('T')[0],
+    Description: '',
+
+    Attachment: null
+
   }
 
-  resetPolicy(): CompanyPolicy {
-    return {
-      PolicyId: 0,
-      CompanyId: 0,
-      RegionId: 0,
-      Title: '',
-      CategoryId: 0,
-      CategoryName: '',
-      EffectiveDate: new Date().toISOString().split('T')[0],
-      Description: '',
-      File: null,
-      FileName: '',
-      FilePath: ''
-    };
-  }
-
-loadCategoriesAndPolicies() {
-  this.companyId = Number(sessionStorage.getItem("CompanyId"));
-  this.regionId = Number(sessionStorage.getItem("RegionId"));
-  this.adminService.getPolicyCategoryDropdown(this.companyId, this.regionId).subscribe({
-    next: res => {
-      this.categories = res; // now real categories
-      this.adminService.getAllPolicies().subscribe({
-        next: pols => {
-          this.policies = pols.map(p => ({
-            ...p,
-            CategoryName: p.CategoryName || this.getCategoryName(p.CategoryId)
-          }));
-        },
-        error: err => Swal.fire('Error', 'Failed to load policies', 'error')
-      });
-    },
-    error: err => Swal.fire('Error', 'Failed to load categories', 'error')
-  });
 }
 
-  // Helper to get category name by ID
-  getCategoryName(catId: number): string {
-    const cat = this.categories.find(c => c.PolicyCategoryID === catId);
-    return cat ? cat.PolicyCategoryName : '';
+  loadCompanies() {
+
+    this.adminService.getCompanies(null, this.userId)
+      .subscribe(res => {
+        this.companies = res
+      })
+
   }
 
-  onFileChange(event: any) {
-    const file = event.target.files[0];
+  loadRegions() {
+
+    this.adminService.getRegions(null, this.userId)
+      .subscribe(res => {
+        this.regions = res
+      })
+
+  }
+
+  loadDepartments() {
+
+    this.adminService.getallDepartments()
+      .subscribe(res => {
+        this.departments = res.filter(x => x.isActive)
+      })
+
+  }
+
+  getDepartmentName(id: number) {
+
+    const d = this.departments.find(x => x.departmentId == id)
+
+    return d ? d.departmentName : '-'
+
+  }
+
+  getPolicies() {
+
+    this.spinner.show()
+
+    this.adminService.getAllPolicies(this.userId)
+      .subscribe(res => {
+
+this.policies = res.map((x: any) => ({
+
+  PolicyId: x.policyId,
+  CompanyId: x.companyId,
+  RegionId: x.regionId,
+  DepartmentId: x.departmentId,
+
+  Title: x.policyTitle,
+  Category: x.category,
+
+  EffectiveDate: x.effectiveDate,
+
+  Description: x.policyDescription
+
+}))
+
+        this.spinner.hide()
+
+      })
+
+  }
+
+  onFileSelected(e: any) {
+
+    const file = e.target.files[0]
+
     if (file) {
-      this.policy.File = file;
-      this.policy.FileName = file.name;
-    }
-  }
 
-  onSubmit() {
-    if (!this.policy.CategoryId || this.policy.CategoryId === 0) {
-      Swal.fire('Validation', 'Please select a category', 'warning');
-      return;
+      this.policy.Attachment = file
+
     }
 
-    const formData = new FormData();
-    formData.append('PolicyId', this.policy.PolicyId.toString());
-    formData.append('CompanyId', this.policy.CompanyId.toString());
-    formData.append('RegionId', this.policy.RegionId.toString());
-    formData.append('Title', this.policy.Title);
-    formData.append('CategoryId', this.policy.CategoryId.toString());
-    formData.append('CategoryName', this.getCategoryName(this.policy.CategoryId));
-    formData.append('EffectiveDate', this.policy.EffectiveDate);
-    formData.append('Description', this.policy.Description || '');
-    if (this.policy.File) formData.append('File', this.policy.File, this.policy.FileName);
-
-    if (this.isEditMode) {
-      this.adminService.updatePolicy(formData).subscribe({
-        next: () => {
-          Swal.fire('Updated', 'Policy updated successfully', 'success');
-          this.resetForm();
-          this.loadCategoriesAndPolicies();
-        },
-        error: () => Swal.fire('Error', 'Failed to update policy', 'error')
-      });
-    } else {
-      this.adminService.createPolicy(formData).subscribe({
-        next: () => {
-          Swal.fire('Added', 'Policy added successfully', 'success');
-          this.resetForm();
-          this.loadCategoriesAndPolicies();
-        },
-        error: () => Swal.fire('Error', 'Failed to add policy', 'error')
-      });
-    }
   }
 
-  editPolicy(p: CompanyPolicy) {
-    this.isEditMode = true;
-    this.policy = { ...p };
-    this.policy.EffectiveDate = new Date(p.EffectiveDate).toISOString().split('T')[0];
+onSubmit() {
+
+  const payload = {
+
+    policyId: this.policy.PolicyId,
+    userId: this.userId,
+
+    companyId: this.policy.CompanyId
+      ? Number(this.policy.CompanyId)
+      : null,
+
+    regionId: this.policy.RegionId
+      ? Number(this.policy.RegionId)
+      : null,
+
+    departmentId: this.policy.DepartmentId
+      ? Number(this.policy.DepartmentId)
+      : null,
+
+    policyTitle: this.policy.Title,
+    policyDescription: this.policy.Description,
+
+    category: this.policy.Category,
+
+    effectiveDate: this.policy.EffectiveDate,
+    expiryDate: null,
+
+    postedDate: new Date().toISOString().split('T')[0],
+
+    isActive: true,
+
+    createdBy: this.userId,
+    updatedBy: this.isEditMode ? this.userId : null
+
   }
 
-  deletePolicy(p: CompanyPolicy) {
+  const request = this.isEditMode
+    ? this.adminService.updatePolicy(this.policy.PolicyId, payload)
+    : this.adminService.savePolicy(payload)
+
+  request.subscribe(() => {
+
+    Swal.fire("Success", "Policy Saved", "success")
+
+    this.resetForm()
+
+    this.getPolicies()
+
+  })
+
+}
+
+  editPolicy(p: any) {
+
+    this.isEditMode = true
+
+    this.policy = { ...p }
+
+    this.policy.EffectiveDate = new Date(p.EffectiveDate)
+      .toISOString()
+      .split('T')[0]
+
+  }
+
+  deletePolicy(p: any) {
+
     Swal.fire({
-      title: 'Confirm Delete',
-      text: `Are you sure you want to delete policy "${p.Title}"?`,
+
+      title: 'Delete?',
+      text: 'Confirm delete policy',
       icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete'
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.adminService.deletePolicy(p.PolicyId).subscribe({
-          next: () => {
-            Swal.fire('Deleted', 'Policy deleted successfully', 'success');
-            this.loadCategoriesAndPolicies();
-          },
-          error: () => Swal.fire('Error', 'Failed to delete policy', 'error')
-        });
+      showCancelButton: true
+
+    }).then(r => {
+
+      if (r.isConfirmed) {
+
+        this.adminService.deletePolicy(p.PolicyId, this.userId)
+          .subscribe(() => {
+
+            Swal.fire("Deleted", "Policy removed", "success")
+
+            this.getPolicies()
+
+          })
+
       }
-    });
+
+    })
+
   }
 
   resetForm() {
-    this.policy = this.resetPolicy();
-    this.isEditMode = false;
+
+    this.policy = this.resetPolicy()
+
+    this.isEditMode = false
+
   }
+
 }
