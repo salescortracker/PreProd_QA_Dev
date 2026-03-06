@@ -9,12 +9,11 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 })
 export class AllExpensesComponent {
 filtersForm!: FormGroup;
-
   expenses: any[] = [];
   categories: any[] = [];
   countries: string[] = [];
   statuses: string[] = ['Pending', 'Approved', 'Rejected', 'Reimbursed'];
-
+  
   // UI
   noRecordsFound = false;
 
@@ -26,6 +25,7 @@ filtersForm!: FormGroup;
   pageSize = 10;
   currentPage = 1;
   pageSizeOptions = [5, 10, 20, 50];
+  userId!: number;
 
   constructor(
     private fb: FormBuilder,
@@ -36,9 +36,11 @@ filtersForm!: FormGroup;
   // 🔹 INIT
   // ============================================================
   ngOnInit(): void {
+    this.userId = Number(sessionStorage.getItem('UserId'));
     this.buildForm();
     this.loadCategories();
     this.loadAllExpenses();
+    
   }
 
   // ============================================================
@@ -57,7 +59,7 @@ filtersForm!: FormGroup;
   // 🔹 LOAD ALL EXPENSES (ONLY API CHANGE)
   // ============================================================
   loadAllExpenses(): void {
-    this.expenseService.getAllExpenses().subscribe(res => {
+    this.expenseService.getAllExpenses(this.userId).subscribe(res => {
       if (res.success) {
         this.expenses = res.data.map((e: any) => ({
           ...e,

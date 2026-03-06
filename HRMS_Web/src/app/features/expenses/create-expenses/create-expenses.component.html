@@ -47,7 +47,7 @@
         class="form-select"
         formControlName="expenseCategoryId"
         (change)="onCategoryChange($event)">
-        <option value="">Select category</option>
+        <option [ngValue]="null">Select category</option>
         <option *ngFor="let cat of categories" [value]="cat.expenseCategoryID">
           {{ cat.expenseCategoryName }}
         </option>

@@ -40,6 +40,7 @@ export class ExpensesService {
   constructor(private http: HttpClient) {}
 
   createExpense(formData: FormData) {
+    debugger;
     return this.http.post<any>(`${this.baseUrl}/CreateExpense`, formData);
   }
 
@@ -98,7 +99,8 @@ approveRejectExpenses(payload: ExpenseApprovalDto): Observable<any> {
     payload
   );
 }
- getAllExpenses(): Observable<{ success: boolean, data: Expense[] }> {
-    return this.http.get<{ success: boolean, data: Expense[] }>(`${this.baseUrl}/GetExpensesAll`);
+ getAllExpenses(userId: number): Observable<{ success: boolean, data: Expense[] }> {
+  debugger;
+    return this.http.get<{ success: boolean, data: Expense[] }>(`${this.baseUrl}/GetExpensesAll/${userId}`);
   }
 }
