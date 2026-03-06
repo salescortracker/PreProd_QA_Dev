@@ -2041,4 +2041,10 @@ resetPassword(email: string, newPassword: string) {
   deleteEvent(id: number) {
     return this.http.post(`${this.baseUrl}/MasterData/DeleteEvents?id=${id}`,{});
   }
+
+
+
+  getDashboardEmployees(companyId:number){
+  return this.http.get<any>(`${environment.apiUrl}/employee/GetDashboardEmployees?companyId=${companyId}`);
+}
 }
