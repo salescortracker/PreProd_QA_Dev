@@ -106,11 +106,19 @@ expenseForm!: FormGroup;
   }
 
   loadCategories(): void {
-    this.expenseService.getExpenseCategories().subscribe(res => {
-      if (res.success) this.categories = res.data;
-    });
-  }
+  this.expenseService.getExpenseCategories().subscribe(res => {
 
+    if (res.success && res.data) {
+
+      this.categories = res.data.filter((cat: any) =>
+        Number(cat.companyId) === this.companyId &&
+        Number(cat.regionId) === this.regionId
+      );
+
+    }
+
+  });
+}
   onCategoryChange(event: any): void {
     const categoryId = +event.target.value;
     if (!categoryId) {
