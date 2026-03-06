@@ -13,7 +13,7 @@
   </div>
   <div class="content">
     <p class="label">Total Employees</p>
-    <p class="number">150</p>
+    <p class="number">{{dashboardData?.totalEmployees}}</p>
   </div>
 </div>
   <div class="card-employees">
@@ -80,22 +80,53 @@
 
   <!-- Timesheet Calendar -->
   <div class="card">
-    <h3>Timesheet Updates</h3>
-    <div class="calendar">
-      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-      <div></div><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div>
-      <div>7</div><div>8</div><div>9</div><div class="today">10</div><div>11</div><div>12</div><div>13</div>
-      <div>14</div><div>15</div><div>16</div><div>17</div><div>18</div><div>19</div><div>20</div>
-      <div>21</div><div>22</div><div>23</div><div>24</div><div>25</div><div>26</div><div>27</div>
-      <div>28</div><div>29</div><div>30</div><div>31</div>
-    </div>
+    <h3>Leaves</h3>
+   <div class="calendar">
+
+  <div>Sun</div>
+  <div>Mon</div>
+  <div>Tue</div>
+  <div>Wed</div>
+  <div>Thu</div>
+  <div>Fri</div>
+  <div>Sat</div>
+
+  <div *ngFor="let day of days"
+       [ngClass]="{'leave-day': isLeaveDay(day)}">
+
+       {{day}}
+
+  </div>
+
+</div>
   </div>
 
   <!-- Recruitment Pie Chart -->
-  <div class="card"><h3>Recruitment Progress</h3><canvas id="recruitmentChart" width="250" height="250"></canvas></div>
+<div class="card">
+  <h3>Company Events</h3>
+
+  <div class="events-container">
+    <div class="event-card" *ngFor="let event of events">
+      
+      <h4 class="event-title">{{event.eventName}}</h4>
+      
+      <p class="event-date">
+        {{event.eventDate | date:'dd MMM yyyy'}}
+      </p>
+      
+      <p class="event-desc">
+        {{event.description}}
+      </p>
+
+    </div>
+  </div>
+
+</div>
 
   <!-- Working Format Line Chart -->
-  <div class="card"><h3>Working Format</h3><canvas id="workingChart" width="250" height="250"></canvas></div>
+  <div class="card"><h3>Attendance</h3>
+  <canvas id="attendanceChart" width="250" height="250"></canvas>
+</div>
 <div class="card-tabbed full-row">
   
 
@@ -135,16 +166,31 @@
         <thead>
           <tr>
             <th>Ticket ID</th>
-            <th>Employee</th>
-            <th>Issue</th>
+            <th>Category</th>
+            <th>Subject</th>
             <th>Status</th>
           </tr>
         </thead>
-        <tbody>
-          <tr><td>HD-001</td><td>Durga Prasad</td><td>Software Installation</td><td>Open</td></tr>
-          <tr><td>HD-002</td><td>Shetty</td><td>Password Reset</td><td>Open</td></tr>
-          <tr><td>HD-003</td><td>Ramesh</td><td>VPN Access</td><td>Closed</td></tr>
-        </tbody>
+       <tbody>
+<tr *ngFor="let t of tickets">
+
+  <td>{{ t.ticketNumber }}</td>
+  <td>{{ t.categoryName }}</td>
+  <td>{{ t.subject }}</td>
+
+  <td>
+    <span class="badge"
+      [ngClass]="{
+        'bg-warning text-dark': t.status === 'Open',
+        'bg-success': t.status === 'Approved',
+        'bg-danger': t.status === 'Rejected'
+      }">
+      {{ t.status }}
+    </span>
+  </td>
+
+</tr>
+</tbody>
       </table>
     </div>
   </div>

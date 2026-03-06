@@ -10,6 +10,62 @@
   grid-column: 1 / -1; /* spans all columns */
 }
 
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar div {
+  padding: 10px;
+  text-align: center;
+  border-radius: 6px;
+  background: #f4f4f4;
+}
+
+.leave-day {
+  background: #ff5b5b;
+  color: white;
+  font-weight: bold;
+}
+
+.events-container{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.event-card{
+  background: #ffffff;
+  padding: 15px;
+  width: 220px;
+  border-radius: 10px;
+  box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+  border-left: 5px solid #4CAF50;
+  transition: transform 0.2s;
+}
+
+.event-card:hover{
+  transform: translateY(-3px);
+}
+
+.event-title{
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.event-date{
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.event-desc{
+  font-size: 14px;
+  color: #444;
+}
+
     /* Circle for metric */
 .metric-circle {
   width: 60px;
