@@ -26,7 +26,7 @@ relationship: Relationship = this.getEmptyRelationship();
 
   currentPage = 1;
   pageSize = 5;
-  sortColumn = 'RelationshipID';
+  sortColumn = 'relationshipId';
   sortDirection: 'asc' | 'desc' = 'desc';
 relationshipModel: any = {
   relationshipName: '',
@@ -41,16 +41,16 @@ relationshipModel: any = {
      this.userId = Number(sessionStorage.getItem("UserId"));
     this.companyId = Number(sessionStorage.getItem("CompanyId"));
     this.regionId = Number(sessionStorage.getItem("RegionId"));
-
-    this.loadRelationships();
     this.loadCompanies();
     this.loadRegions();
+    this.loadRelationships();
+    
   }
 
   // Empty model
   getEmptyRelationship(): Relationship {
     return {
-      RelationshipID: 0,
+      relationshipId: 0,
       relationshipName: '',
       companyName: '',
       regionName: '',
@@ -93,14 +93,14 @@ loadCompanies(): void {
     next: (res: any) => {
 
       const list = res.data?.data || res;
-
+this.relationships = []; 
       this.relationships = list
         .map((r: any) => ({
           ...r,
           companyName: this.companyMap[r.companyId] ?? '',
           regionName: this.regionMap[r.regionId] ?? ''
         }))
-        .sort((a: any, b: any) => b.RelationshipID - a.RelationshipID);
+        .sort((a: any, b: any) => b.relationshipId - a.relationshipId);
 
       this.spinner.hide();
     },
@@ -122,9 +122,14 @@ loadCompanies(): void {
           this.loadRelationships();
           this.resetForm();
         },
-        error: () => {
+       error: (err) => {
           this.spinner.hide();
-          Swal.fire('Error', 'Update failed. Please contact IT Administrator.', 'error');
+
+          if (err.error === "Relationship already exists.") {
+            Swal.fire('Duplicate', 'Relationship already exists.', 'warning');
+          } else {
+            Swal.fire('Error', 'Update failed. Please contact IT Administrator.', 'error');
+          }
         }
       });
     } else {
@@ -135,10 +140,16 @@ loadCompanies(): void {
           this.loadRelationships();
           this.resetForm();
         },
-        error: () => {
+       error: (err) => {
           this.spinner.hide();
-          Swal.fire('Error', 'Create failed. Please contact IT Administrator.', 'error');
+
+          if (err.error === "Relationship already exists.") {
+            Swal.fire('Duplicate', 'Relationship already exists.', 'warning');
+          } else {
+            Swal.fire('Error', 'Create failed. Please contact IT Administrator.', 'error');
+          }
         }
+        
       });
     }
   }
@@ -151,6 +162,7 @@ loadCompanies(): void {
 
   // Delete
   deleteRelationship(r: Relationship): void {
+    debugger;
     Swal.fire({
       title: `Are you sure you want to delete ${r.relationshipName}?`,
       showDenyButton: true,
@@ -158,15 +170,24 @@ loadCompanies(): void {
     }).then((result) => {
       if (result.isConfirmed) {
         this.spinner.show();
-        this.adminService.deleteRelationship(r.RelationshipID).subscribe({
+        this.adminService.deleteRelationship(r.relationshipId).subscribe({
           next: () => {
             this.spinner.hide();
             Swal.fire('Deleted', `${r.relationshipName} deleted successfully.`, 'success');
             this.loadRelationships();
           },
-          error: () => {
+          error: (err) => {
+
             this.spinner.hide();
-            Swal.fire('Error', 'Delete failed. Please contact IT Administrator.', 'error');
+
+            // If backend returned success text but Angular treated it as error
+            if (err.status === 200) {
+              Swal.fire('Deleted', `${r.relationshipName} deleted successfully.`, 'success');
+              this.loadRelationships();
+            } else {
+              Swal.fire('Error', 'Delete failed. Please contact IT Administrator.', 'error');
+            }
+
           }
         });
       }
@@ -226,13 +247,19 @@ loadCompanies(): void {
 companyMap: Record<number, string> = {};
 regionMap: Record<number, string> = {};
   // Paginated Data
-  get pagedRelationships(): Relationship[] {
-    const sorted = [...this.filteredRelationships()];
-    this.applySorting();
-    const start = (this.currentPage - 1) * this.pageSize;
-    return sorted.slice(start, start + this.pageSize);
-  }
+ get pagedRelationships(): Relationship[] {
+  const sorted = [...this.filteredRelationships()].sort((a: any, b: any) => {
+    const valueA = a[this.sortColumn];
+    const valueB = b[this.sortColumn];
 
+    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const start = (this.currentPage - 1) * this.pageSize;
+  return sorted.slice(start, start + this.pageSize);
+}
   // Export
   exportAs(type: 'excel' | 'pdf') {
     if (type === 'excel') this.exportExcel();
