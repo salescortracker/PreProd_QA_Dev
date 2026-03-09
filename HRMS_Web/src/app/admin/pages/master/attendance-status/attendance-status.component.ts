@@ -29,7 +29,7 @@ attendance!: AttendanceStatus;
   statusFilter: boolean | '' = '';
 
   currentPage = 1;
-  pageSize = 5;
+  pageSize = 10;
 
   sortColumn = 'attendanceStatusId';
   sortDirection: 'asc' | 'desc' = 'desc';
@@ -88,7 +88,7 @@ checkDuplicate(): void {
   /** Load Data */
   loadAttendanceStatus(): void {
     this.spinner.show();
-    this.admin.getAttendanceStatus(this.companyId, this.regionId).subscribe({
+    this.admin.getAttendanceStatus(this.userId).subscribe({
       next: res => {
         this.attendanceList = res.data;
         this.spinner.hide();

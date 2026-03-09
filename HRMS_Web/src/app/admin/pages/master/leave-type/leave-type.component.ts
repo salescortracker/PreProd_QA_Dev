@@ -87,7 +87,7 @@ getEmptyLeaveType(): any {
 loadLeaveType(): void {
   if (!this.companyId || !this.regionId) return;
   this.spinner.show();
-  this.admin.getLeaveType().subscribe({
+  this.admin.getLeaveType(this.userId).subscribe({
   next: (res: LeaveType[]) => {
    this.leaveTypeList = res;
     this.spinner.hide();

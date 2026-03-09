@@ -365,7 +365,7 @@ export interface KpiCategory {
 }
 
 export interface Relationship {
-  RelationshipID: number;
+  relationshipId: number;
   relationshipName: string;
   companyId:number;
   regionId:number;
@@ -1078,11 +1078,11 @@ createRelationship(data: any) {
 }
 
 updateRelationship(data: any) {
-  return this.http.post<any>(`${this.baseUrl}/UpdateRelationship`, data);
+  return this.http.post<any>(`${this.baseUrl}/UserManagement/UpdateRelationship`, data);
 }
 
 deleteRelationship(id: number) {
-  return this.http.post<any>(`${this.baseUrl}/UserManagement/DeleteRelationship?id=${id}`, {});
+  return this.http.post<any>(`${this.baseUrl}/UserManagement/DeleteRelationship?relationshipId=${id}`, {});
 }
  
   // Policy Category
@@ -1212,8 +1212,8 @@ deleteAttachmentType(id: number) {
   deleteHelpdeskCategory(id: number): Observable<any> {
    return this.http.delete(`${this.baseUrl}/MasterData/helpdesk-category/${id}`);
   }
- getAttendanceStatus(companyId: number, regionId: number) {
- return this.http.get<any>(`${this.baseUrl}/MasterData/GetAllAttendanceStatus?companyId=${companyId}&regionId=${regionId}`); 
+ getAttendanceStatus(createdBy: number) {
+ return this.http.get<any>(`${this.baseUrl}/MasterData/GetAllAttendanceStatus?createdBy=${createdBy}`); 
 }
 
 createAttendanceStatus(model: AttendanceStatus) {
@@ -1259,8 +1259,8 @@ deleteLeaveStatus(id: number) {
   );
 }
 
- getLeaveType(): Observable<LeaveType[]> {
-    return this.http.get<LeaveType[]>(`${this.baseUrl}/MasterData/GetLeaveType`);
+ getLeaveType(userId:number): Observable<LeaveType[]> {
+    return this.http.get<LeaveType[]>(`${this.baseUrl}/MasterData/GetLeaveType?userId=${userId}`);
   }
   createLeaveType(model: LeaveType): Observable<any> {
     return this.http.post(`${this.baseUrl}/MasterData/CreateLeaveType`, model);

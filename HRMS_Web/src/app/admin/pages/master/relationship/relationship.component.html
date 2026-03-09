@@ -115,9 +115,9 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th (click)="sortTable('RelationshipName')" class="sortable">
+                <th (click)="sortTable('relationshipName')" class="sortable">
                   Relationship Name
-                  <i class="fa" [ngClass]="getSortIcon('RelationshipName')"></i>
+                  <i class="fa" [ngClass]="getSortIcon('relationshipName')"></i>
                 </th>
                  <th>Company Name</th>
                 <th>Region Name</th>
@@ -147,7 +147,7 @@
                 </td>
               </tr>
               <tr *ngIf="pagedRelationships.length === 0">
-                <td colspan="4" class="text-center text-muted">No records found</td>
+                <td colspan="6" class="text-center text-muted">No records found</td>
               </tr>
             </tbody>
           </table>
