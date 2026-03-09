@@ -8,13 +8,28 @@ import { RecruitmentService } from '../service/recruitment.service';
   styleUrl: './offer.component.css'
 })
 export class OfferComponent {
-departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ]; 
+// departments = ['HR', 'IT', 'Finance', 'Sales'];
+//   designations = [
+//     'Software Engineer',
+//     'Senior Developer',
+//     'Team Lead',
+//     'Manager'
+//   ]; 
+departments: any[] = [];
+designations: any[] = [];
+ onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.offerForm.designationId
+    );
+
+    if (selected) {
+      this.offerForm.department = selected.departmentName || 'Not Assigned';
+      this.offerForm.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.offerForm.department = '';
+      this.offerForm.designation = '';
+    }
+  }
   candidates: any[] = [
     {
       id: 1,
@@ -113,6 +128,19 @@ hrUsers: any[] = [];
     }
     this.loadHRUsers(); 
     this.loadOfferRecords(); 
+    this.loadDesignations();
+  }
+   loadDesignations() {
+    this.recruitmentService
+      .getDesignations(this.companyId, this.regionId)
+      .subscribe({
+        next: (res: any) => {
+          this.designations = res;
+        },
+        error: () => {
+          Swal.fire('Error', 'Failed to load designations', 'error');
+        }
+      });
   }
   loadOfferRecords() {
   this.recruitmentService

@@ -18,12 +18,7 @@ export class OnboardingComponent {
 
   screeningSelectedCandidates: any[] = [];
   departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ];
+ designations: any[] = [];
   candidate: any = {
 
     department: '',
@@ -39,6 +34,19 @@ export class OnboardingComponent {
   userId!: number;
   companyId!: number;
   regionId!: number;
+ onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.candidate.designationId
+    );
+
+    if (selected) {
+      this.candidate.department = selected.departmentName || 'Not Assigned';
+      this.candidate.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.candidate.department = '';
+      this.candidate.designation = '';
+    }
+  }
 
   constructor(private recruitmentService: RecruitmentService) { }
   ngOnInit(): void {
@@ -52,7 +60,21 @@ export class OnboardingComponent {
       return;
     }
     this.loadOnboardedCandidates();
+     this.loadDesignations();
 
+  }
+
+    loadDesignations() {
+    this.recruitmentService
+      .getDesignations(this.companyId, this.regionId)
+      .subscribe({
+        next: (res: any) => {
+          this.designations = res;
+        },
+        error: () => {
+          Swal.fire('Error', 'Failed to load designations', 'error');
+        }
+      });
   }
   loadOnboardedCandidates() {
     this.recruitmentService.getOnboardedCandidates(this.companyId, this.regionId)
@@ -192,37 +214,37 @@ export class OnboardingComponent {
     if (pct >= 40) return 'yellow';
     return 'red';
   }
-  showResume() {
-    if (!this.candidate.department || !this.candidate.designation) {
-      Swal.fire('Warning', 'Select Department & Designation', 'warning');
-      return;
-    }
-
-    this.recruitmentService
-      .getonboardingCandidatesTopTable(
-        this.companyId,
-        this.regionId,
-        this.candidate.department,
-        this.candidate.designation
-      )
-      .subscribe({
-        next: (res:any) => {
-          this.screeningCandidates = res.map((x:any) => ({
-            candidateId: x.candidateId,   // 🔥 REQUIRED
-            seqNo: x.seqNo,
-            name: x.name,
-            mobile: x.mobile,
-            expectedCtc: x.expected,
-            stage: 6,
-            screening: []
-          }));
-
-        },
-        error: () => {
-          Swal.fire('Error', 'Failed to load resumes', 'error');
-        }
-      });
-  }
+   showResume() {
+     if (!this.candidate.department || !this.candidate.designation) {
+       Swal.fire('Warning', 'Select Department & Designation', 'warning');
+       return;
+     }
+   
+     this.recruitmentService
+       .getOfferCandidatesTable(
+         this.companyId,
+         this.regionId,
+         this.candidate.department,
+         this.candidate.designation
+       )
+       .subscribe({
+         next: (res:any) => {
+           this.screeningCandidates = res.map((x:any) => ({
+             candidateId: x.candidateId,   // 🔥 REQUIRED
+             seqNo: x.seqNo,
+             name: x.name,
+             mobile: x.mobile,
+             expectedCtc: x.expected,
+             stage: 5,
+             screening: []
+           }));
+   
+         },
+         error: () => {
+           Swal.fire('Error', 'Failed to load resumes', 'error');
+         }
+       });
+   }
 
   sortTop(column: string) {
     if (this.topSortColumn === column) {
