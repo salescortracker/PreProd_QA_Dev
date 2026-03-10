@@ -33,20 +33,31 @@ loadAppointments() {
         this.appointments = res;
       });
   }
- onEdit(row: any) {
+onEdit(row: any) {
+
   this.service.getAppointmentCandidateDetails(row.candidateId)
-    .subscribe(res => {
-      this.selectedCandidate = {
-        ...res,
-        result: row.result || 'Selected',
-        description: row.description || '',
-        reportedBy: this.userId,
-        interviewId: row.interviewId,
-        interviewDate: row.interviewDate,
-        location: row.location,
-        levelNo: row.levelNo   // ✅ IMPORTANT
-      };
-    });
+  .subscribe(res => {
+
+    this.selectedCandidate = {
+      ...res,
+
+      candidateId: row.candidateId,
+      interviewId: row.interviewId,
+
+      levelNo: row.levelNo,   // ⭐ VERY IMPORTANT
+
+      interviewDate: row.interviewDate,
+      location: row.location,
+
+      result: row.result || "Selected",
+      description: row.description || "",
+
+      reportedBy: this.userId
+    };
+
+    console.log("SelectedCandidate:", this.selectedCandidate); // debug
+  });
+
 }
 
 
@@ -61,6 +72,11 @@ loadAppointments() {
 save() {
   if (!this.selectedCandidate) return;
 
+  //  if (!this.selectedCandidate.levelNo) {
+  //   Swal.fire("Error","Interview level missing","error");
+  //   return;
+  // }
+
   const payload = {
     interviewId: this.selectedCandidate.interviewId,
     regionId: this.regionId,
@@ -68,7 +84,7 @@ save() {
     userId: this.userId,
     candidateId: this.selectedCandidate.candidateId,
 
-    levelNo: this.selectedCandidate.levelNo,   // ✅ dynamic
+    levelNo: Number(this.selectedCandidate.levelNo),
     interviewerId: this.userId,
     interviewerName: sessionStorage.getItem("Name"),
     interviewDate: this.selectedCandidate.interviewDate,
@@ -78,7 +94,7 @@ save() {
     description: this.selectedCandidate.description,
     result: this.selectedCandidate.result
   };
-
+ console.log("Payload:", payload);
   this.service.updateCandidateInterview(payload).subscribe({
     next: () => {
       Swal.fire("Success", "Appointment updated successfully", "success");

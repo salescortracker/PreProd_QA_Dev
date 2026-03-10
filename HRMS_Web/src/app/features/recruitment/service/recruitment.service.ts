@@ -11,9 +11,26 @@ export class RecruitmentService {
   ///////////////////////////////////////////////////////
 //////////////Resuem Upload - Recruitment /////////////
 ///////////////////////////////////////////////////////
-  getReferenceUsers() {
+  getReferenceUsers(companyId: number, regionId: number) {
   return this.http.get<any[]>(
-    `${this.baseUrl}/Recruitment/GetReferenceUsers`
+    `${this.baseUrl}/Recruitment/GetReferenceUsers/${companyId}/${regionId}`
+  );
+}
+getDesignations(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetDesignations/${companyId}/${regionId}`
+  );
+}
+getNoticePeriods(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetNoticePeriods/${companyId}/${regionId}`
+  );
+}
+
+  
+getMaritalStatuses(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetMaritalStatuses/${companyId}/${regionId}`
   );
 }
   // 🔹 Stage Master
@@ -39,9 +56,8 @@ export class RecruitmentService {
     );
   }
 deleteCandidate(candidateId: number) {
-  return this.http.post(
-    `${this.baseUrl}/Recruitment/DeleteCandidate`,
-    candidateId
+  return this.http.delete(
+    `${this.baseUrl}/Recruitment/DeleteCandidate/${candidateId}`
   );
 }
 
@@ -51,7 +67,7 @@ getCandidateById(candidateId: number) {
   );
 }
 updateCandidate(formData: FormData) {
-  return this.http.post(
+  return this.http.put(
     `${this.baseUrl}/Recruitment/UpdateCandidate`,
     formData
   );
@@ -64,25 +80,25 @@ downloadResume(fileName: string) {
     { responseType: 'blob' }
   );
 }
-parseResume(file: File) {
-  const formData = new FormData();
-  formData.append('resume', file);
-  return this.http.post<any>(
-    `${this.baseUrl}/Recruitment/ParseResume`,
-    formData
-  );
-}
+// parseResume(file: File) {
+//   const formData = new FormData();
+//   formData.append('resume', file);
+//   return this.http.post<any>(
+//     `${this.baseUrl}/Recruitment/ParseResume`,
+//     formData
+//   );
+// }
 
 
 ///////screening Service ///////////
 
 
 
-getRecruiterseUsers() {
-  return this.http.get<any[]>(
-    `${this.baseUrl}/Recruitment/GetRecruiters`
-  );
-}
+// getRecruiterseUsers() {
+//   return this.http.get<any[]>(
+//     `${this.baseUrl}/Recruitment/GetRecruiters`
+//   );
+// }
 getScreeningCandidatesTopTable(
   companyId: number,
   regionId: number,
@@ -137,6 +153,11 @@ getScreeningCandidatesTopTableInterview(
         designation
       }
     }
+  );
+}
+getInterviewLevels(companyId: number, regionId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/Recruitment/GetInterviewLevels/${companyId}/${regionId}`
   );
 }
 saveCandidateInterview(payload: any): Observable<any> {

@@ -8,7 +8,7 @@ import { RecruitmentService } from '../service/recruitment.service';
   styleUrl: './interview.component.css'
 })
 export class InterviewComponent {
- userId!: number;
+  userId!: number;
   companyId!: number;
   regionId!: number;
   screeningCandidates: any[] = [];   // Top table
@@ -25,15 +25,11 @@ export class InterviewComponent {
   isEditMode = false;
   editingCandidateId: number | null = null;
 
-  departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ];
+  designations: any[] = [];
+  departments: any[] = [];
   interviewForm: any = { level: 1, interviewer: '', dt: '', location: '', cabin: '', result: 'Pending', feedback: '' };
-  levels = [1, 2];
+  levels: any[] = [];
+
   // -------------------- SORTING --------------------
   topSortColumn: string | null = null;
   topSortDirection: 'asc' | 'desc' = 'asc';
@@ -66,12 +62,39 @@ export class InterviewComponent {
 
     this.loadInterviewUsers();
     this.loadInterviewRecords();
+    this.loadDesignations();
+    this.loadInterviewLevels();
+  }
+  loadInterviewLevels() {
+    this.recruitmentService
+      .getInterviewLevels(this.companyId, this.regionId)
+      .subscribe({
+        next: (res: any) => {
+          this.levels = res;
+        },
+        error: () => {
+          Swal.fire('Error', 'Failed to load interview levels', 'error');
+        }
+      });
+  }
+
+  loadDesignations() {
+    this.recruitmentService
+      .getDesignations(this.companyId, this.regionId)
+      .subscribe({
+        next: (res: any) => {
+          this.designations = res;
+        },
+        error: () => {
+          Swal.fire('Error', 'Failed to load designations', 'error');
+        }
+      });
   }
   loadInterviewUsers() {
     this.recruitmentService
-      .getReferenceUsers()
+      .getReferenceUsers(this.companyId, this.regionId)
       .subscribe({
-        next: (res:any) => {
+        next: (res: any) => {
           this.interviewer = res;
         },
         error: () => {
@@ -79,40 +102,64 @@ export class InterviewComponent {
         }
       });
   }
+  onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.interviewForm.designationId
+    );
 
- updateInterview() {
-  if (!this.interviewForm.interviewId) return;
-
-  const interviewerObj = this.interviewer.find(x => x.userId == this.interviewForm.interviewerId);
-
-  const payload = {
-    interviewId: this.interviewForm.interviewId,   // ✅ ADD THIS
-    regionId: this.regionId,
-    companyId: this.companyId,
-    userId: this.userId,
-    candidateId: this.editingCandidateId,
-    levelNo: this.interviewForm.level,
-    interviewerId: this.interviewForm.interviewerId,
-    interviewerName: interviewerObj?.fullName,
-    interviewDate: this.interviewForm.dt,
-    location: this.interviewForm.location,
-    meetingLink: this.interviewForm.meetingLink,
-    description: this.interviewForm.feedback,
-    result: this.interviewForm.result
-  };
-
-  this.recruitmentService.updateCandidateInterview(payload).subscribe({
-    next: () => {
-      Swal.fire('Success', 'Interview updated', 'success');
-      this.loadInterviewRecords();
-      this.resetInterviewForm();
-    },
-    error: () => {
-      Swal.fire('Error', 'Failed to update interview', 'error');
+    if (selected) {
+      this.interviewForm.department = selected.departmentName || 'Not Assigned';
+      this.interviewForm.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.interviewForm.department = '';
+      this.interviewForm.designation = '';
     }
-  });
-}
+  }
 
+  updateInterview() {
+
+    console.log("Update button clicked");
+    console.log("InterviewId:", this.interviewForm.interviewId);
+
+    if (this.interviewForm.interviewId == null) {
+      Swal.fire('Error', 'InterviewId missing', 'error');
+      return;
+    }
+
+    const interviewerObj = this.interviewer.find(
+      x => x.userId == this.interviewForm.interviewerId
+    );
+
+    const payload = {
+      interviewId: this.interviewForm.interviewId,
+      regionId: this.regionId,
+      companyId: this.companyId,
+      userId: this.userId,
+      candidateId: this.editingCandidateId,
+      levelNo: this.interviewForm.level,
+      interviewerId: this.interviewForm.interviewerId,
+      interviewerName: interviewerObj?.fullName,
+      interviewDate: this.interviewForm.dt,
+      location: this.interviewForm.location,
+      meetingLink: this.interviewForm.meetingLink,
+      description: this.interviewForm.feedback,
+      result: this.interviewForm.result
+    };
+
+    console.log("Update Payload:", payload);
+
+    this.recruitmentService.updateCandidateInterview(payload).subscribe({
+      next: () => {
+        Swal.fire('Success', 'Interview updated', 'success');
+        this.loadInterviewRecords();
+        this.resetInterviewForm();
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire('Error', 'Failed to update interview', 'error');
+      }
+    });
+  }
 
   scheduleInterview() {
     if (this.isEditMode) {
@@ -180,7 +227,7 @@ export class InterviewComponent {
     this.recruitmentService
       .getInterviewRecords(this.userId, this.companyId, this.regionId)
       .subscribe({
-        next: (res:any) => {
+        next: (res: any) => {
           this.interviewRecords = res;
         },
         error: () => {
@@ -209,31 +256,33 @@ export class InterviewComponent {
     }
   }
   editInterview(row: any) {
-  this.isEditMode = true;
-  this.editingCandidateId = row.candidateId;
-this.interviewForm.interviewId = row.interviewId;
-  this.interviewForm.level = row.levelNo;
-  this.interviewForm.interviewerId = row.interviewerId;
-  this.interviewForm.dt = this.toDateTimeLocal(row.interviewDate);
-  this.interviewForm.location = row.location;
-  this.interviewForm.meetingLink = row.meetingLink;
-  this.interviewForm.feedback = row.description;
-  this.interviewForm.result = row.result;
+    console.log("Edit row:", row);
+    this.isEditMode = true;
+    this.editingCandidateId = row.candidateId;
+    this.interviewForm.interviewId = row.interviewId;
+    this.interviewForm.interviewId = row.interviewId;
+    this.interviewForm.level = row.levelNo;
+    this.interviewForm.interviewerId = row.interviewerId;
+    this.interviewForm.dt = this.toDateTimeLocal(row.interviewDate);
+    this.interviewForm.location = row.location;
+    this.interviewForm.meetingLink = row.meetingLink;
+    this.interviewForm.feedback = row.description;
+    this.interviewForm.result = row.result;
 
-  this.interviewForm.department = row.department;
-  this.interviewForm.designation = row.designation;
+    this.interviewForm.department = row.department;
+    this.interviewForm.designation = row.designation;
 
-  const topCandidate = {
-    candidateId: row.candidateId,
-    seqNo: row.seqNo,
-    name: row.candidateName,
-    mobile: row.mobile,
-    expectedCtc: row.expectedSalary
-  };
+    const topCandidate = {
+      candidateId: row.candidateId,
+      seqNo: row.seqNo,
+      name: row.candidateName,
+      mobile: row.mobile,
+      expectedCtc: row.expectedSalary
+    };
 
-  this.screeningCandidates = [topCandidate];
-  this.screeningSelectedCandidates = [topCandidate];
-}
+    this.screeningCandidates = [topCandidate];
+    this.screeningSelectedCandidates = [topCandidate];
+  }
 
   toDateTimeLocal(date: string) {
     const d = new Date(date);
@@ -254,7 +303,7 @@ this.interviewForm.interviewId = row.interviewId;
         this.interviewForm.designation
       )
       .subscribe({
-        next: (res:any) => {
+        next: (res: any) => {
           this.screeningCandidates = res.map((x: any) => ({
             candidateId: x.candidateId,   // 🔥 REQUIRED
             seqNo: x.seqNo,
@@ -400,17 +449,17 @@ this.interviewForm.interviewId = row.interviewId;
     this.bottomPageSize = size;
     this.bottomCurrentPage = 1;
   }
-resetInterviewFilters() {
-  this.interviewForm.department = '';
-  this.interviewForm.designation = '';
-  this.screeningCandidates = [];
-  this.screeningSelectedCandidates = [];
-  this.topCurrentPage = 1;
-}
+  resetInterviewFilters() {
+    this.interviewForm.department = '';
+    this.interviewForm.designation = '';
+    this.screeningCandidates = [];
+    this.screeningSelectedCandidates = [];
+    this.topCurrentPage = 1;
+  }
 
-resetInterviewForm() {
-  this.isEditMode = false;
-  this.editingCandidateId = null;
-  this.resetForm(); // reuse your existing method
-}
+  resetInterviewForm() {
+    this.isEditMode = false;
+    this.editingCandidateId = null;
+    this.resetForm(); // reuse your existing method
+  }
 }

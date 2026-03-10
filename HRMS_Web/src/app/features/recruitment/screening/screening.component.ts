@@ -14,18 +14,13 @@ export class ScreeningComponent {
   screeningSelectedCandidates: any[] = [];
   filterStage: any = '';
   globalFilter = '';
+   designations: any[] = [];
   candidates: any[] = [];
   screeningRecruiters: string[] = [];
 
   screeningResult = 'Pass';
   screeningRemarks = '';
-  departments = ['HR', 'IT', 'Finance', 'Sales'];
-  designations = [
-    'Software Engineer',
-    'Senior Developer',
-    'Team Lead',
-    'Manager'
-  ];
+  
   candidate: any = {
     appliedDate: '',
 
@@ -33,6 +28,7 @@ export class ScreeningComponent {
     designation: '',
 
   };
+   references: any[] = [];
   recruiters: any[] = [];
   screeningRecruiterId: number | null = null;
   userId!: number;
@@ -71,9 +67,47 @@ export class ScreeningComponent {
       console.error("UserId missing in sessionStorage");
       return;
     }
-    this.loadRecruitersUsers();
+ 
     this.loadScreeningRecords();
+ this.loadDesignations();
+ this.loadReferenceUsers();
+  }
+    loadReferenceUsers() {
+      this.recruitmentService
+        .getReferenceUsers(this.companyId, this.regionId)
+        .subscribe({
+          next: (res: any) => {
+            this.references = res;
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to load reference users', 'error');
+          }
+        });
+    }
+    loadDesignations() {
+      this.recruitmentService
+        .getDesignations(this.companyId, this.regionId)
+        .subscribe({
+          next: (res: any) => {
+            this.designations = res;
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to load designations', 'error');
+          }
+        });
+    }
+      onDesignationChange() {
+    const selected = this.designations.find(
+      d => d.designationId == this.candidate.designationId
+    );
 
+    if (selected) {
+      this.candidate.department = selected.departmentName || 'Not Assigned';
+      this.candidate.designation = selected.designationName; // VERY IMPORTANT
+    } else {
+      this.candidate.department = '';
+      this.candidate.designation = '';
+    }
   }
   loadScreeningRecords() {
     this.recruitmentService
@@ -133,18 +167,7 @@ export class ScreeningComponent {
       });
   }
 
-  loadRecruitersUsers() {
-    this.recruitmentService
-      .getRecruiterseUsers()
-      .subscribe({
-        next: (res:any) => {
-          this.recruiters = res;
-        },
-        error: () => {
-          Swal.fire('Error', 'Failed to load reference users', 'error');
-        }
-      });
-  }
+  
 
   toggleCandidate(candidate: any, event: any) {
     if (event.target.checked) {
@@ -161,63 +184,68 @@ export class ScreeningComponent {
 
 
 
-  applyScreening() {
-    if (!this.screeningSelectedCandidates.length) {
-      Swal.fire('Warning', 'Select at least one candidate', 'warning');
-      return;
-    }
+ applyScreening(result: string) {
 
-    if (!this.screeningRecruiterId) {
-      Swal.fire('Warning', 'Select Recruiter', 'warning');
-      return;
-    }
-
-    const result = this.screeningResult; // 🔥 store before reset
-
-    for (const c of this.screeningSelectedCandidates) {
-      const payload = {
-        regionId: this.regionId,
-        companyId: this.companyId,
-        userId: this.userId,
-        candidateId: c.candidateId,
-        recruiterId: Number(this.screeningRecruiterId),
-        screeningStatus: result,
-        remarks: this.screeningRemarks
-      };
-
-      this.recruitmentService.saveCandidateScreening(payload).subscribe({
-        next: () => {
-          this.screeningRecords.unshift({
-            ...c,
-            screening: [{
-              recruiter: this.screeningRecruiterId,
-              status: result,
-              remarks: this.screeningRemarks,
-              date: this.todayTime()
-            }],
-            stage: result === 'Pass' ? 3 : 2
-          });
-        },
-        error: () => {
-          Swal.fire('Error', 'Failed to save screening', 'error');
-        }
-      });
-    }
-
-    // ✅ Correct SweetAlert messages
-    let msg = '';
-    if (result === 'Pass') msg = 'Candidate moved to the next stage';
-    else if (result === 'Hold') msg = 'Candidate Hold';
-    else if (result === 'Reject') msg = 'Candidate Reject';
-
-    Swal.fire('Success', msg, 'success');
-
-    // clear UI state
-    this.screeningSelectedCandidates = [];
-    this.screeningCandidates = [];
-    this.screeningRemarks = '';
-    this.screeningResult = 'Pass';
+  if (!this.screeningSelectedCandidates.length) {
+    Swal.fire('Warning', 'Select at least one candidate', 'warning');
+    return;
   }
+
+  if (!this.screeningRecruiterId) {
+    Swal.fire('Warning', 'Select Recruiter', 'warning');
+    return;
+  }
+
+  for (const c of this.screeningSelectedCandidates) {
+
+    const payload = {
+      regionId: this.regionId,
+      companyId: this.companyId,
+      userId: this.userId,
+      candidateId: c.candidateId,
+      recruiterId: Number(this.screeningRecruiterId),
+      screeningStatus: result,
+      remarks: this.screeningRemarks
+    };
+
+    this.recruitmentService.saveCandidateScreening(payload).subscribe({
+      next: () => {
+
+        let stage = 2;
+
+       if (result === 'Selected') stage = 3;
+if (result === 'Rejected') stage = 12;
+if (result === 'Hold') stage = 2;
+
+        this.screeningRecords.unshift({
+          ...c,
+          screening: [{
+            recruiter: this.getRecruiterName(this.screeningRecruiterId),
+            status: result,
+            remarks: this.screeningRemarks,
+            date: this.todayTime()
+          }],
+          stage: stage
+        });
+
+      },
+      error: () => {
+        Swal.fire('Error', 'Failed to save screening', 'error');
+      }
+    });
+  }
+
+  let msg = '';
+if (result === 'Selected') msg = 'Candidate Selected for Interview';
+if (result === 'Hold') msg = 'Candidate Put On Hold';
+if (result === 'Rejected') msg = 'Candidate Rejected';
+
+  Swal.fire('Success', msg, 'success');
+
+  this.screeningSelectedCandidates = [];
+  this.screeningCandidates = [];
+  this.screeningRemarks = '';
+}
   canEdit(c: any): boolean {
     const last = c.screening?.[c.screening.length - 1];
     return last && (last.status === 'Hold' || last.status === 'Reject');
